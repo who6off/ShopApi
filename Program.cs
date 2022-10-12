@@ -1,5 +1,7 @@
 using HelloApi.Configuration;
+using HelloApi.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -33,6 +35,12 @@ namespace HelloApi
             builder.Services.AddControllers();
 
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+
+            builder.Services.AddDbContext<ShopContext>(options =>
+            {
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString(builder.Environment.EnvironmentName));
+            });
 
             builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 
