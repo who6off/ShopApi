@@ -1,4 +1,8 @@
+using HelloApi.Configuration;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace HelloApi
 {
@@ -8,11 +12,27 @@ namespace HelloApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddAuthentication();
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = true;
+                    var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>();
+                    options.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidAudience = jwtSettings.Audience,
+                        ValidIssuer = jwtSettings.Issuer,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+                    };
+                });
             builder.Services.AddAuthorization();
 
             builder.Services.AddCors();
             builder.Services.AddControllers();
+
+            builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
             builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 
