@@ -1,11 +1,17 @@
-﻿namespace HelloApi.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace HelloApi.Models
 {
     public class Order
     {
         public int Id { get; set; }
 
-        public User User { get; set; }
+        [Required]
+        public int BuyerId { get; set; }
 
-        public Product[]? Products { get; set; }
+        [Required]
+        public User Buyer { get; set; }
+
+        public ICollection<OrderItem> OrderItems { get; set; }
     }
 }
