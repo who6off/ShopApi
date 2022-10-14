@@ -1,17 +1,33 @@
-﻿using HelloApi.Models;
+﻿using HelloApi.Authorization;
+using HelloApi.Configuration;
+using HelloApi.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace HelloApi.Data
 {
     public class ShopContext : DbContext
     {
+        private readonly ShopDbSettings _settings;
+
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Order> Orders { get; set; }
 
-        public ShopContext(DbContextOptions<ShopContext> options) : base(options) { }
+        public ShopContext(
+            DbContextOptions<ShopContext> options,
+            IOptions<ShopDbSettings> settings) : base(options)
+        {
+            _settings = settings.Value;
+
+            if (_settings.InitData)
+            {
+                Database.EnsureDeleted();
+                Database.EnsureCreated();
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -61,6 +77,37 @@ namespace HelloApi.Data
                 .WithMany(p => p.OrderItems)
                 .HasForeignKey(oi => oi.ProductId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+
+
+            InitData(modelBuilder);
+        }
+
+        private void InitData(ModelBuilder modelBuilder)
+        {
+            if (!_settings.InitData) return;
+
+            var roles = new Role[]
+            {
+                new Role(){Id = 1, Name = UserRoles.Admin},
+                new Role(){Id = 2, Name = UserRoles.Seller},
+                new Role(){Id = 3, Name = UserRoles.Buyer}
+            };
+
+            var mainAdmin = new User()
+            {
+                Id = 1,
+                Email = _settings.MainAdmin.Email,
+                PasswordHash = PasswordHasher.Hash(_settings.MainAdmin.Password),
+                RoleId = 1,
+                FirstName = _settings.MainAdmin.FirstName,
+                SecondName = _settings.MainAdmin.SecondName,
+                BirthDate = _settings.MainAdmin.BirthDate
+            };
+
+            modelBuilder.Entity<Role>().HasData(roles);
+
+            modelBuilder.Entity<User>().HasData(mainAdmin);
         }
     }
 }

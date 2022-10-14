@@ -1,5 +1,7 @@
 using HelloApi.Configuration;
 using HelloApi.Data;
+using HelloApi.Repositories;
+using HelloApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -35,6 +37,7 @@ namespace HelloApi
             builder.Services.AddControllers();
 
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+            builder.Services.Configure<ShopDbSettings>(builder.Configuration.GetSection(ShopDbSettings.SectionName));
 
             builder.Services.AddDbContext<ShopContext>(options =>
             {
@@ -43,6 +46,11 @@ namespace HelloApi
             });
 
             builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+            builder.Services.AddScoped<IUserService, UserService>();
+
 
             var app = builder.Build();
 
@@ -62,7 +70,6 @@ namespace HelloApi
 
             if (app.Environment.IsDevelopment())
                 app.UseDeveloperExceptionPage();
-
 
 
             app.UseEndpoints(i => i.MapControllers());
