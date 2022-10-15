@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HelloApi.Controllers
 {
@@ -16,6 +17,14 @@ namespace HelloApi.Controllers
         public IActionResult Test()
         {
             return Ok(new { Message = "Test" });
+        }
+
+        [HttpGet]
+        [Route("test-auth")]
+        [Authorize]
+        public IActionResult TestAuth()
+        {
+            return Ok(new { Message = "Test Auth" });
         }
     }
 }

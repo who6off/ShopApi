@@ -9,6 +9,7 @@ namespace HelloApi.Data
     public class ShopContext : DbContext
     {
         private readonly ShopDbSettings _settings;
+        private readonly IPasswordHasher _passwordHasher;
 
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
@@ -18,10 +19,11 @@ namespace HelloApi.Data
 
         public ShopContext(
             DbContextOptions<ShopContext> options,
-            IOptions<ShopDbSettings> settings) : base(options)
+            IOptions<ShopDbSettings> settings,
+            IPasswordHasher passwordHasher) : base(options)
         {
             _settings = settings.Value;
-
+            _passwordHasher = passwordHasher;
             if (_settings.InitData)
             {
                 Database.EnsureDeleted();
@@ -98,7 +100,7 @@ namespace HelloApi.Data
             {
                 Id = 1,
                 Email = _settings.MainAdmin.Email,
-                PasswordHash = PasswordHasher.Hash(_settings.MainAdmin.Password),
+                PasswordHash = _passwordHasher.Hash(_settings.MainAdmin.Password),
                 RoleId = 1,
                 FirstName = _settings.MainAdmin.FirstName,
                 SecondName = _settings.MainAdmin.SecondName,

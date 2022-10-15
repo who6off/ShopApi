@@ -1,3 +1,4 @@
+using HelloApi.Authorization;
 using HelloApi.Configuration;
 using HelloApi.Data;
 using HelloApi.Repositories;
@@ -26,6 +27,8 @@ namespace HelloApi
                     {
                         ValidateIssuer = true,
                         ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateActor = true,
                         ValidAudience = jwtSettings.Audience,
                         ValidIssuer = jwtSettings.Issuer,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
@@ -46,6 +49,9 @@ namespace HelloApi
             });
 
             builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+
+            builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
+            builder.Services.AddSingleton<ITokenGenerator, TokenGenerator>();
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 

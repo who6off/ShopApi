@@ -1,4 +1,5 @@
-﻿using HelloApi.Models;
+﻿using HelloApi.Authorization;
+using HelloApi.Models;
 
 namespace HelloApi.Services
 {
@@ -6,8 +7,11 @@ namespace HelloApi.Services
     {
         public Task<User> Register(User user);
 
+        public Task<string?> Login(LoginRequest loginRequest);
+
         public Task<User[]> GetAll();
         public Task<Role> AddRole(Role role);
+
 
         public Task<Role[]> GetAllRoles();
     }

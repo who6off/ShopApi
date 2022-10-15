@@ -19,6 +19,15 @@ namespace HelloApi.Repositories
             return result.Entity;
         }
 
+        public async Task<User?> FindByEmail(string email)
+        {
+            var result = await _context
+                .Users
+                .Include(i => i.Role)
+                .FirstOrDefaultAsync(i => i.Email == email);
+            return result;
+        }
+
         public async Task<User[]> GetAll()
         {
             var result = await _context.Users.ToArrayAsync<User>();

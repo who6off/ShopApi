@@ -1,4 +1,5 @@
-﻿using HelloApi.Services;
+﻿using HelloApi.Authorization;
+using HelloApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HelloApi.Controllers
@@ -14,6 +15,20 @@ namespace HelloApi.Controllers
             _userService = userService;
         }
 
+        [HttpPost]
+        [Route("login")]
+        public async Task<IActionResult> Login(LoginRequest loginRequest)
+        {
+            try
+            {
+                var token = _userService.Login(loginRequest);
+                return (token is null) ? NotFound() : Ok(new { Token = token.Result });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
 
         [HttpGet]
         [Route("")]
