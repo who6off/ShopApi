@@ -9,19 +9,38 @@ namespace HelloApi.Services
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly ITokenGenerator _tokenGenerator;
+        private readonly IValidator _validator;
 
         public UserService(
             IUserRepository userRepository,
             IPasswordHasher passwordHasher,
-            ITokenGenerator tokenGenerator)
+            ITokenGenerator tokenGenerator,
+            IValidator validator)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _tokenGenerator = tokenGenerator;
+            _validator = validator;
         }
 
-        public async Task<User> Register(User user)
+        public async Task<User> Register(RegistrationRequest request)
         {
+            if (!_validator.ValidateEmail(request.Email))
+                throw new Exception("Incorrect email address");
+
+            if (!_validator.ValidatePassword(request.Password))
+                throw new Exception("Incorrect password");
+
+            var user = new User()
+            {
+                Email = request.Email,
+                PasswordHash = _passwordHasher.Hash(request.Password),
+                RoleId = request.RoleId,
+                FirstName = request.FirstName,
+                SecondName = request.SecondName,
+                BirthDate = DateTime.Parse(request.BirthDate)
+            };
+
             var result = await _userRepository.Add(user);
             return result;
         }

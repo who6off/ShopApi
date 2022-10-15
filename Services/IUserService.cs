@@ -5,7 +5,7 @@ namespace HelloApi.Services
 {
     public interface IUserService
     {
-        public Task<User> Register(User user);
+        public Task<User> Register(RegistrationRequest request);
 
         public Task<string?> Login(LoginRequest loginRequest);
 

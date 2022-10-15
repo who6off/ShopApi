@@ -16,13 +16,32 @@ namespace HelloApi.Controllers
         }
 
         [HttpPost]
+        [Route("register")]
+        public async Task<IActionResult> Login(RegistrationRequest request)
+        {
+            try
+            {
+                var newUser = await _userService.Register(request);
+
+                if (newUser == null)
+                    return BadRequest();
+
+                return Ok(newUser);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login(LoginRequest loginRequest)
         {
             try
             {
-                var token = _userService.Login(loginRequest);
-                return (token is null) ? NotFound() : Ok(new { Token = token.Result });
+                var token = await _userService.Login(loginRequest);
+                return (token is null) ? NotFound() : Ok(new { Token = token });
             }
             catch (Exception e)
             {
