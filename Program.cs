@@ -52,6 +52,7 @@ namespace HelloApi
 
             builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
             builder.Services.AddSingleton<ITokenGenerator, TokenGenerator>();
+            builder.Services.AddSingleton<IValidator, Validator>();
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 
