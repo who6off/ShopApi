@@ -57,14 +57,10 @@ namespace HelloApi
 
             builder.Services.AddScoped<IUserService, UserService>();
 
-
             var app = builder.Build();
-
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseCors(i => i.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
             app.UseStaticFiles();
@@ -75,8 +71,13 @@ namespace HelloApi
             });
 
             if (app.Environment.IsDevelopment())
-                app.UseDeveloperExceptionPage();
-
+            {
+                app.UseExceptionHandler("/api/error/dev");
+            }
+            else
+            {
+                app.UseExceptionHandler("/api/error/prod");
+            }
 
             app.UseEndpoints(i => i.MapControllers());
 
