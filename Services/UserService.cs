@@ -1,4 +1,4 @@
-﻿using HelloApi.Authorization;
+﻿using HelloApi.Authentication;
 using HelloApi.Models;
 using HelloApi.Repositories;
 

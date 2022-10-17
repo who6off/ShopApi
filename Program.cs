@@ -1,9 +1,11 @@
+using HelloApi.Authentication;
 using HelloApi.Authorization;
 using HelloApi.Configuration;
 using HelloApi.Data;
 using HelloApi.Repositories;
 using HelloApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
@@ -16,47 +18,55 @@ namespace HelloApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var (services, configuration) = (builder.Services, builder.Configuration);
 
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.RequireHttpsMetadata = false;
-                    options.SaveToken = true;
-                    var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>();
-                    options.TokenValidationParameters = new TokenValidationParameters()
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateActor = true,
-                        ValidAudience = jwtSettings.Audience,
-                        ValidIssuer = jwtSettings.Issuer,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
-                    };
-                });
-            builder.Services.AddAuthorization();
-
-            builder.Services.AddCors();
-            builder.Services.AddControllers();
-
-            builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
-            builder.Services.Configure<ShopDbSettings>(builder.Configuration.GetSection(ShopDbSettings.SectionName));
-
-            builder.Services.AddDbContext<ShopContext>(options =>
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                 .AddJwtBearer(options =>
+                 {
+                     options.RequireHttpsMetadata = false;
+                     options.SaveToken = true;
+                     var jwtSettings = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>();
+                     options.TokenValidationParameters = new TokenValidationParameters()
+                     {
+                         ValidateIssuer = true,
+                         ValidateAudience = true,
+                         ValidateLifetime = true,
+                         ValidateActor = true,
+                         ValidAudience = jwtSettings.Audience,
+                         ValidIssuer = jwtSettings.Issuer,
+                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+                     };
+                 });
+            services.AddAuthorization(options =>
             {
-                options.UseSqlServer(
-                    builder.Configuration.GetConnectionString(builder.Environment.EnvironmentName));
+                options.AddPolicy(
+                    AgeRestrictionPolicy.Name,
+                    p => p.AddRequirements(new AgeRestrictionPolicy(configuration.GetValue<int>("AdultAge"))));
             });
 
-            builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddCors();
+            services.AddControllers();
 
-            builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
-            builder.Services.AddSingleton<ITokenGenerator, TokenGenerator>();
-            builder.Services.AddSingleton<IValidator, Validator>();
+            services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+            services.Configure<ShopDbSettings>(configuration.GetSection(ShopDbSettings.SectionName));
 
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            services.AddDbContext<ShopContext>(options =>
+             {
+                 options.UseSqlServer(
+                     configuration.GetConnectionString(builder.Environment.EnvironmentName));
+             });
 
-            builder.Services.AddScoped<IUserService, UserService>();
+            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+
+            services.AddSingleton<IAuthorizationHandler, AgeRestrictionPolicyHandler>();
+
+            services.AddSingleton<IPasswordHasher, PasswordHasher>();
+            services.AddSingleton<ITokenGenerator, TokenGenerator>();
+            services.AddSingleton<IValidator, Validator>();
+
+            services.AddScoped<IUserRepository, UserRepository>();
+
+            services.AddScoped<IUserService, UserService>();
 
             var app = builder.Build();
             app.UseRouting();

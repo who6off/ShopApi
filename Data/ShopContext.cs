@@ -1,4 +1,4 @@
-﻿using HelloApi.Authorization;
+﻿using HelloApi.Authentication;
 using HelloApi.Configuration;
 using HelloApi.Models;
 using Microsoft.EntityFrameworkCore;

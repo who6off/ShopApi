@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Text;
 
 
-namespace HelloApi.Authorization
+namespace HelloApi.Authentication
 {
     public class TokenGenerator : ITokenGenerator
     {

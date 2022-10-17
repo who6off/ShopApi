@@ -1,7 +1,8 @@
-﻿using HelloApi.Authorization;
+﻿using HelloApi.Authentication;
 using HelloApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HelloApi.Controllers
 {
@@ -55,8 +56,10 @@ namespace HelloApi.Controllers
         [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> GetAllUsers()
         {
+            var role = HttpContext.User.Claims.FirstOrDefault(i => i.Type == ClaimTypes.Role).Value;
+            Console.WriteLine(role);
             var users = await _userService.GetAll();
-            return Ok(users);
+            return Ok(new object[] { role, users });
         }
 
         [HttpGet]

@@ -1,6 +1,6 @@
 ﻿using HelloApi.Models;
 
-namespace HelloApi.Authorization
+namespace HelloApi.Authentication
 {
     public interface ITokenGenerator
     {
