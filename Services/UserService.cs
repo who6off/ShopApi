@@ -7,17 +7,20 @@ namespace HelloApi.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IRoleRepository _roleRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly ITokenGenerator _tokenGenerator;
         private readonly IValidator _validator;
 
         public UserService(
             IUserRepository userRepository,
+            IRoleRepository roleRepository,
             IPasswordHasher passwordHasher,
             ITokenGenerator tokenGenerator,
             IValidator validator)
         {
             _userRepository = userRepository;
+            _roleRepository = roleRepository;
             _passwordHasher = passwordHasher;
             _tokenGenerator = tokenGenerator;
             _validator = validator;
@@ -69,12 +72,12 @@ namespace HelloApi.Services
 
         public async Task<Role> AddRole(Role role)
         {
-            return await _userRepository.AddRole(role);
+            return await _roleRepository.Add(role);
         }
 
         public async Task<Role[]> GetAllRoles()
         {
-            return await _userRepository.GetAllRoles();
+            return await _roleRepository.GetAll();
         }
     }
 }

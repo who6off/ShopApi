@@ -31,20 +31,10 @@ namespace HelloApi.Repositories
 
         public async Task<User[]> GetAll()
         {
-            var result = await _context.Users.ToArrayAsync<User>();
-            return result;
-        }
-
-        public async Task<Role> AddRole(Role role)
-        {
-            var result = await _context.Roles.AddAsync(role);
-            await _context.SaveChangesAsync();
-            return result.Entity;
-        }
-
-        public async Task<Role[]> GetAllRoles()
-        {
-            var result = await _context.Roles.ToArrayAsync<Role>();
+            var result = await _context
+                .Users
+                .Include(u => u.Role)
+                .ToArrayAsync<User>();
             return result;
         }
     }

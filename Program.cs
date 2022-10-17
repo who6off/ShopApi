@@ -64,6 +64,7 @@ namespace HelloApi
             services.AddSingleton<ITokenGenerator, TokenGenerator>();
             services.AddSingleton<IValidator, Validator>();
 
+            services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
 
             services.AddScoped<IUserService, UserService>();
