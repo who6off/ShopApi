@@ -24,10 +24,11 @@ namespace HelloApi.Data
         {
             _settings = settings.Value;
             _passwordHasher = passwordHasher;
+
             if (_settings.InitData)
             {
-                Database.EnsureDeleted();
-                Database.EnsureCreated();
+                //Database.EnsureDeleted();
+                //Database.EnsureCreated();
             }
         }
 

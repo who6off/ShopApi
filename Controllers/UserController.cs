@@ -1,5 +1,6 @@
 ﻿using HelloApi.Authorization;
 using HelloApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HelloApi.Controllers
@@ -17,16 +18,16 @@ namespace HelloApi.Controllers
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Login(RegistrationRequest request)
+        public async Task<IActionResult> Register(RegistrationRequest request)
         {
             try
             {
-                var newUser = await _userService.Register(request);
+                var registrationResponce = await _userService.Register(request);
 
-                if (newUser == null)
+                if (registrationResponce == null)
                     return BadRequest();
 
-                return Ok(newUser);
+                return Ok(registrationResponce);
             }
             catch (Exception e)
             {
@@ -51,6 +52,7 @@ namespace HelloApi.Controllers
 
         [HttpGet]
         [Route("")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userService.GetAll();
@@ -59,6 +61,7 @@ namespace HelloApi.Controllers
 
         [HttpGet]
         [Route("roles")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> GetAllRoles()
         {
             var roles = await _userService.GetAllRoles();

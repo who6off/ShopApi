@@ -23,7 +23,7 @@ namespace HelloApi.Services
             _validator = validator;
         }
 
-        public async Task<User> Register(RegistrationRequest request)
+        public async Task<RegistrationResponce> Register(RegistrationRequest request)
         {
             if (!_validator.ValidateEmail(request.Email))
                 throw new Exception("Incorrect email address");
@@ -41,8 +41,9 @@ namespace HelloApi.Services
                 BirthDate = DateTime.Parse(request.BirthDate)
             };
 
-            var result = await _userRepository.Add(user);
-            return result;
+            var newUser = await _userRepository.Add(user);
+            var token = _tokenGenerator.Generate(user);
+            return new RegistrationResponce() { User = newUser, Token = token };
         }
 
         public async Task<string?> Login(LoginRequest loginRequest)

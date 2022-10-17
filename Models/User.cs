@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace HelloApi.Models
 {
@@ -11,7 +12,9 @@ namespace HelloApi.Models
         [StringLength(320, MinimumLength = 3)]
         public string Email { get; set; }
 
+        [JsonIgnore]
         [Required]
+        [StringLength(256)]
         public string PasswordHash { get; set; }
 
         [Required]
@@ -32,8 +35,10 @@ namespace HelloApi.Models
         [Column(TypeName = "date")]
         public DateTime BirthDate { get; set; }
 
+        [JsonIgnore]
         public ICollection<Product> Products { get; set; }
 
+        [JsonIgnore]
         public ICollection<Order> Orders { get; set; }
     }
 }

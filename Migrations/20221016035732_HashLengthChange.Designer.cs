@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelloApi.Migrations
 {
     [DbContext(typeof(ShopContext))]
-    [Migration("20221014053557_Migration1")]
-    partial class Migration1
+    [Migration("20221016035732_HashLengthChange")]
+    partial class HashLengthChange
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -171,7 +171,8 @@ namespace HelloApi.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
