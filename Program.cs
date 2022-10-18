@@ -66,8 +66,10 @@ namespace HelloApi
 
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IProductService, ProductService>();
 
             var app = builder.Build();
             app.UseRouting();
@@ -82,14 +84,14 @@ namespace HelloApi
                 RequestPath = new PathString("/images")
             });
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseExceptionHandler("/api/error/dev");
-            }
-            else
-            {
-                app.UseExceptionHandler("/api/error/prod");
-            }
+            //if (app.Environment.IsDevelopment())
+            //{
+            //    app.UseExceptionHandler("/api/error/dev");
+            //}
+            //else
+            //{
+            //    app.UseExceptionHandler("/api/error/prod");
+            //}
 
             app.UseEndpoints(i => i.MapControllers());
 

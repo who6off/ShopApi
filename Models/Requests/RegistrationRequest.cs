@@ -1,4 +1,4 @@
-﻿namespace HelloApi.Authentication
+﻿namespace HelloApi.Models.Requests
 {
     public class RegistrationRequest
     {

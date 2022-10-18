@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace HelloApi.Models
 {
@@ -13,6 +14,7 @@ namespace HelloApi.Models
         [Required]
         public bool IsForAdults { get; set; }
 
+        [JsonIgnore]
         public ICollection<Product> Products { get; set; }
     }
 }

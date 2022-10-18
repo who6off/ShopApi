@@ -1,6 +1,4 @@
-﻿using HelloApi.Models;
-
-namespace HelloApi.Authentication
+﻿namespace HelloApi.Models.Responses
 {
     public class RegistrationResponce
     {

@@ -1,4 +1,5 @@
 ﻿using HelloApi.Authentication;
+using HelloApi.Models.Requests;
 using HelloApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

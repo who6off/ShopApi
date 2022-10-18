@@ -1,19 +1,18 @@
 ﻿using HelloApi.Data;
+using HelloApi.Extensions;
 using HelloApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace HelloApi.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository : ARepository<ShopContext>, IUserRepository
     {
-        private readonly ShopContext _context;
-
-        public UserRepository(ShopContext context)
-        {
-            _context = context;
-        }
+        public UserRepository(ShopContext context) : base(context) { }
         public async Task<User> Add(User user)
         {
+            user.FirstName.FirstCharToUpper();
+            user.SecondName.FirstCharToUpper();
+
             var result = await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
             await _context.Entry(result.Entity).Reference(u => u.Role).LoadAsync();
