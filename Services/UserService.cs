@@ -1,8 +1,10 @@
 ﻿using HelloApi.Authentication;
+using HelloApi.Extensions;
 using HelloApi.Models;
 using HelloApi.Models.Requests;
 using HelloApi.Models.Responses;
-using HelloApi.Repositories;
+using HelloApi.Repositories.Interfaces;
+using HelloApi.Services.Interfaces;
 
 namespace HelloApi.Services
 {
@@ -41,8 +43,8 @@ namespace HelloApi.Services
                 Email = request.Email,
                 PasswordHash = _passwordHasher.Hash(request.Password),
                 RoleId = request.RoleId,
-                FirstName = request.FirstName,
-                SecondName = request.SecondName,
+                FirstName = request.FirstName.FirstCharToUpper(),
+                SecondName = request.SecondName.FirstCharToUpper(),
                 BirthDate = DateTime.Parse(request.BirthDate)
             };
 
@@ -74,6 +76,7 @@ namespace HelloApi.Services
 
         public async Task<Role> AddRole(Role role)
         {
+            role.Name = role.Name.FirstCharToUpper();
             return await _roleRepository.Add(role);
         }
 

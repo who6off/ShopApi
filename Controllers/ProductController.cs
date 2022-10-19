@@ -2,7 +2,7 @@
 using HelloApi.Authorization;
 using HelloApi.Models;
 using HelloApi.Models.Requests;
-using HelloApi.Services;
+using HelloApi.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,9 +22,30 @@ namespace HelloApi.Controllers
 
         [HttpGet]
         [Authorize]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return Ok(new { Message = "Products" });
+            var result = await _productService.GetAll();
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Consumes("multipart/form-data")]
+        [Route("")]
+        [Authorize(Roles = UserRoles.Seller)]
+        public async Task<IActionResult> CreateProduct([FromForm] ProductCreationRequest req)
+        {
+            var sellerId = HttpContext.GetUserId();
+            if (sellerId is null) return BadRequest();
+
+            var result = await _productService.Add(new Product()
+            {
+                Name = req.Name,
+                Price = req.Price,
+                CategoryId = req.CategoryId,
+                SellerId = sellerId.Value,
+            }, req.Image);
+
+            return (result is null) ? BadRequest() : Ok(result);
         }
 
         [HttpGet]

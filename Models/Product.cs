@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace HelloApi.Models
 {
@@ -17,16 +18,19 @@ namespace HelloApi.Models
 
         public int? CategoryId { get; set; }
 
+        [JsonIgnore]
         public Category? Category { get; set; }
 
         [Required]
         public int SellerId { get; set; }
 
         [Required]
+        [JsonIgnore]
         public User Seller { get; set; }
 
-        public string Image { get; set; }
+        public string? Image { get; set; }
 
+        [JsonIgnore]
         public ICollection<OrderItem> OrderItems { get; set; }
     }
 }

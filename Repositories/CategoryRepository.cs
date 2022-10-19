@@ -1,6 +1,6 @@
 ﻿using HelloApi.Data;
-using HelloApi.Extensions;
 using HelloApi.Models;
+using HelloApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace HelloApi.Repositories
@@ -10,7 +10,6 @@ namespace HelloApi.Repositories
         public CategoryRepository(ShopContext context) : base(context) { }
         public async Task<Category> Add(Category category)
         {
-            category.Name.FirstCharToUpper();
             var result = await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
             return result.Entity;

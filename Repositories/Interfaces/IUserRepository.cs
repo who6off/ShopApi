@@ -1,6 +1,6 @@
 ﻿using HelloApi.Models;
 
-namespace HelloApi.Repositories
+namespace HelloApi.Repositories.Interfaces
 {
     public interface IUserRepository
     {

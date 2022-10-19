@@ -1,6 +1,6 @@
 ﻿using HelloApi.Data;
-using HelloApi.Extensions;
 using HelloApi.Models;
+using HelloApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace HelloApi.Repositories
@@ -10,9 +10,6 @@ namespace HelloApi.Repositories
         public UserRepository(ShopContext context) : base(context) { }
         public async Task<User> Add(User user)
         {
-            user.FirstName.FirstCharToUpper();
-            user.SecondName.FirstCharToUpper();
-
             var result = await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
             await _context.Entry(result.Entity).Reference(u => u.Role).LoadAsync();

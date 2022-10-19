@@ -3,7 +3,9 @@ using HelloApi.Authorization;
 using HelloApi.Configuration;
 using HelloApi.Data;
 using HelloApi.Repositories;
+using HelloApi.Repositories.Interfaces;
 using HelloApi.Services;
+using HelloApi.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +19,7 @@ namespace HelloApi
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            var builder = WebApplication.CreateBuilder();
             var (services, configuration) = (builder.Services, builder.Configuration);
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -63,10 +65,12 @@ namespace HelloApi
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddSingleton<ITokenGenerator, TokenGenerator>();
             services.AddSingleton<IValidator, Validator>();
+            services.AddSingleton<IFileService, FileService>();
 
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IProductService, ProductService>();
@@ -77,21 +81,17 @@ namespace HelloApi
             app.UseAuthorization();
             app.UseCors(i => i.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
+            app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseStaticFiles(new StaticFileOptions()
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\images")),
-                RequestPath = new PathString("/images")
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(),
+                    @$"wwwroot/{configuration.GetValue<string>("ImagesFolder")}")),
+                RequestPath = new PathString($"/{configuration.GetValue<string>("ImagesFolder")}")
             });
 
-            //if (app.Environment.IsDevelopment())
-            //{
-            //    app.UseExceptionHandler("/api/error/dev");
-            //}
-            //else
-            //{
-            //    app.UseExceptionHandler("/api/error/prod");
-            //}
+
 
             app.UseEndpoints(i => i.MapControllers());
 

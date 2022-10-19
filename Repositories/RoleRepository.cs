@@ -1,6 +1,6 @@
 ﻿using HelloApi.Data;
-using HelloApi.Extensions;
 using HelloApi.Models;
+using HelloApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace HelloApi.Repositories
@@ -11,7 +11,6 @@ namespace HelloApi.Repositories
 
         public async Task<Role> Add(Role role)
         {
-            role.Name.FirstCharToUpper();
             var result = await _context.Roles.AddAsync(role);
             await _context.SaveChangesAsync();
             return result.Entity;

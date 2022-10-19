@@ -3,7 +3,7 @@ using HelloApi.Models;
 using HelloApi.Models.Requests;
 using HelloApi.Models.Responses;
 
-namespace HelloApi.Services
+namespace HelloApi.Services.Interfaces
 {
     public interface IUserService
     {

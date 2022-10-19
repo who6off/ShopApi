@@ -1,6 +1,6 @@
 ﻿using HelloApi.Authentication;
 using HelloApi.Models.Requests;
-using HelloApi.Services;
+using HelloApi.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

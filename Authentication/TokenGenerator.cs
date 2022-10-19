@@ -35,7 +35,7 @@ namespace HelloApi.Authentication
                 _settings.Issuer,
                 _settings.Audience,
                 claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddHours(_settings.ValidHours),
                 signingCredentials: signIn);
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
