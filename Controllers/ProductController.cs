@@ -29,8 +29,8 @@ namespace HelloApi.Controllers
         }
 
         [HttpPost]
-        [Consumes("multipart/form-data")]
         [Route("")]
+        [Consumes("multipart/form-data")]
         [Authorize(Roles = UserRoles.Seller)]
         public async Task<IActionResult> CreateProduct([FromForm] ProductCreationRequest req)
         {

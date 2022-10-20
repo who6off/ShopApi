@@ -25,9 +25,13 @@ namespace HelloApi.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<Product> Update(Product product)
+        public async Task<Product> Update(Product product)
         {
-            throw new NotImplementedException();
+            return await Task.Run(() =>
+            {
+                var result = _context.Products.Update(product);
+                return result.Entity;
+            });
         }
 
         public async Task<Product[]> GetAll()
