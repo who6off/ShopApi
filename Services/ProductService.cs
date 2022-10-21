@@ -26,12 +26,29 @@ namespace HelloApi.Services
 
         public async Task<Product> Add(Product product, IFormFile? image = null)
         {
-            var newFile = (image is null) ? null : await _fileService.SaveImage(image);
-            product.Image = newFile;
+            var newImage = (image is null) ? null : await _fileService.SaveImage(image);
+            product.Image = newImage;
             product.Name = product.Name.FirstCharToUpper();
             var newProduct = await _productRepository.Add(product);
 
             return newProduct;
+        }
+
+        public async Task<int?> GetSellerIdByProductId(int id)
+        {
+            var product = await _productRepository.GetById(id);
+            return (product is null) ? null : product.SellerId;
+        }
+
+        public async Task<Product> Update(Product product, IFormFile? image = null)
+        {
+            var newImage = (image is null) ? null : await _fileService.ReplaceImage(image, product.Image);
+            if (newImage is not null)
+                product.Image = newImage;
+            product.Name = product.Name.FirstCharToUpper();
+
+            var updatedProduct = await _productRepository.Update(product);
+            return updatedProduct;
         }
 
         public async Task<Product[]> GetAll()
@@ -49,6 +66,11 @@ namespace HelloApi.Services
         {
             var result = await _categoryRepository.GetAll();
             return result;
+        }
+
+        public Task<Product> Delete(int id)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -20,16 +20,19 @@ namespace HelloApi.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<Product> GetById(int id)
+        public async Task<Product?> GetById(int id)
         {
-            throw new NotImplementedException();
+            var result = await _context.Products.FirstOrDefaultAsync(i => i.Id == id);
+            return result;
         }
 
         public async Task<Product> Update(Product product)
         {
             return await Task.Run(() =>
             {
+                _context.ChangeTracker.Clear(); //Updatte fix
                 var result = _context.Products.Update(product);
+                _context.SaveChanges();
                 return result.Entity;
             });
         }

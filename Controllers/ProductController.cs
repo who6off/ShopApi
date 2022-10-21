@@ -48,6 +48,27 @@ namespace HelloApi.Controllers
             return (result is null) ? BadRequest() : Ok(result);
         }
 
+        [HttpPut]
+        [Consumes("multipart/form-data")]
+        [Authorize(Roles = UserRoles.Seller)]
+        public async Task<IActionResult> UpdateProduct([FromForm] ProductUpdateRequest req)
+        {
+            if (!(await IsPermitedSeller(req.Id)))
+                return BadRequest();
+
+            var updetedProduct = await _productService.Update(new Product()
+            {
+                Id = req.Id,
+                Name = req.Name,
+                Price = req.Price,
+                CategoryId = req.CategoryId,
+                SellerId = HttpContext.GetUserId().Value
+            }, req.NewImage);
+
+            return Ok(updetedProduct);
+        }
+
+
         [HttpGet]
         [Route("adults")]
         [Authorize(Policy = AgeRestrictionPolicy.Name)]
@@ -76,6 +97,13 @@ namespace HelloApi.Controllers
                 IsForAdults = req.IsForAdults
             });
             return (result is null) ? BadRequest() : Ok(result);
+        }
+
+        private async Task<bool> IsPermitedSeller(int productId)
+        {
+            var userId = HttpContext.GetUserId();
+            var sellerId = (await _productService.GetSellerIdByProductId(productId)) ?? 0;
+            return userId == sellerId;
         }
     }
 }
