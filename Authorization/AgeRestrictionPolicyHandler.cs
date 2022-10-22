@@ -1,6 +1,4 @@
-﻿using HelloApi.Extensions;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Authorization;
 
 namespace HelloApi.Authorization
 {
@@ -11,10 +9,8 @@ namespace HelloApi.Authorization
             AgeRestrictionPolicy requirement)
         {
 
-            var birthDate = context.User?.FindFirst(c => c.Type == ClaimTypes.DateOfBirth)?.Value;
-            if (birthDate is null) return Task.CompletedTask;
-
-            var userAge = DateTime.Now.GetYearDifference(birthDate);
+            var userAge = context.User?.GetUserAge();
+            if (userAge is null) return Task.CompletedTask;
 
             if (userAge >= requirement.PurmittedAge)
                 context.Succeed(requirement);

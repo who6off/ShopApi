@@ -21,7 +21,7 @@ namespace HelloApi.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> Index()
         {
             var result = await _productService.GetAll();
@@ -29,13 +29,12 @@ namespace HelloApi.Controllers
         }
 
         [HttpPost]
-        [Route("")]
         [Consumes("multipart/form-data")]
         [Authorize(Roles = UserRoles.Seller)]
         public async Task<IActionResult> CreateProduct([FromForm] ProductCreationRequest req)
         {
-            var sellerId = HttpContext.GetUserId();
-            if (sellerId is null) return BadRequest();
+            var sellerId = HttpContext.User.GetUserId();
+            if (sellerId is null) return StatusCode(StatusCodes.Status403Forbidden);
 
             var result = await _productService.Add(new Product()
             {
@@ -54,7 +53,7 @@ namespace HelloApi.Controllers
         public async Task<IActionResult> UpdateProduct([FromForm] ProductUpdateRequest req)
         {
             if (!(await IsPermitedSeller(req.Id)))
-                return BadRequest();
+                return StatusCode(StatusCodes.Status403Forbidden);
 
             var updetedProduct = await _productService.Update(new Product()
             {
@@ -62,11 +61,26 @@ namespace HelloApi.Controllers
                 Name = req.Name,
                 Price = req.Price,
                 CategoryId = req.CategoryId,
-                SellerId = HttpContext.GetUserId().Value
+                SellerId = HttpContext.User.GetUserId().Value
             }, req.NewImage);
 
-            return Ok(updetedProduct);
+            return (updetedProduct is null) ? BadRequest() : Ok(updetedProduct);
         }
+
+        [HttpDelete]
+        [Route("{id}")]
+        [Authorize(Roles = $"{UserRoles.Seller}, {UserRoles.Admin}")]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            var role = HttpContext.User.GetUserRole();
+            if (role == UserRoles.Seller && !(await IsPermitedSeller(id)))
+                return StatusCode(StatusCodes.Status403Forbidden);
+
+            var isDeleted = await _productService.Delete(id);
+
+            return isDeleted ? Ok() : BadRequest();
+        }
+
 
 
         [HttpGet]
@@ -101,7 +115,7 @@ namespace HelloApi.Controllers
 
         private async Task<bool> IsPermitedSeller(int productId)
         {
-            var userId = HttpContext.GetUserId();
+            var userId = HttpContext.User.GetUserId();
             var sellerId = (await _productService.GetSellerIdByProductId(productId)) ?? 0;
             return userId == sellerId;
         }

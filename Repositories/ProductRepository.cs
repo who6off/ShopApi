@@ -8,17 +8,6 @@ namespace HelloApi.Repositories
     public class ProductRepository : ARepository<ShopContext>, IProductRepository
     {
         public ProductRepository(ShopContext context) : base(context) { }
-        public async Task<Product> Add(Product product)
-        {
-            var newProduct = await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
-            return newProduct.Entity;
-        }
-
-        public Task<bool> Delete(int id)
-        {
-            throw new NotImplementedException();
-        }
 
         public async Task<Product?> GetById(int id)
         {
@@ -26,14 +15,49 @@ namespace HelloApi.Repositories
             return result;
         }
 
-        public async Task<Product> Update(Product product)
+        public async Task<Product> Add(Product product)
+        {
+            var newProduct = await _context.Products.AddAsync(product);
+            await _context.SaveChangesAsync();
+            return newProduct.Entity;
+        }
+
+        public async Task<Product?> Delete(int id)
+        {
+            return await Task.Run(async () =>
+            {
+                Product? product = await GetById(id);
+
+                try
+                {
+                    _context.ChangeTracker.Clear();  //Delete fix
+                    product = _context.Products.Remove(product).Entity;
+                    _context.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    return null;
+                }
+
+                return product;
+            });
+        }
+
+        public async Task<Product?> Update(Product product)
         {
             return await Task.Run(() =>
             {
-                _context.ChangeTracker.Clear(); //Updatte fix
-                var result = _context.Products.Update(product);
-                _context.SaveChanges();
-                return result.Entity;
+                try
+                {
+                    _context.ChangeTracker.Clear(); //Update fix
+                    var result = _context.Products.Update(product);
+                    _context.SaveChanges();
+                    return result.Entity;
+                }
+                catch (Exception e)
+                {
+                    return null;
+                }
             });
         }
 

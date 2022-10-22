@@ -9,8 +9,7 @@ namespace HelloApi.Repositories.Interfaces
 
 
         public Task<Product> Add(Product product);
-        public Task<Product> Update(Product product);
-
-        public Task<bool> Delete(int id);
+        public Task<Product?> Update(Product product);
+        public Task<Product?> Delete(int id);
     }
 }

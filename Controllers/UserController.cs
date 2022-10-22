@@ -53,7 +53,7 @@ namespace HelloApi.Controllers
 
         [HttpGet]
         [Route("")]
-        [Authorize(Roles = UserRoles.Admin)]
+        //[Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userService.GetAll();
