@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace HelloApi.Models
 {
@@ -10,6 +11,7 @@ namespace HelloApi.Models
         public int OrderId { get; set; }
 
         [Required]
+        [JsonIgnore]
         public Order Order { get; set; }
 
         [Required]
