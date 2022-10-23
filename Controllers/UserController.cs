@@ -21,34 +21,23 @@ namespace HelloApi.Controllers
         [Route("register")]
         public async Task<IActionResult> Register(RegistrationRequest request)
         {
-            try
-            {
-                var registrationResponce = await _userService.Register(request);
 
-                if (registrationResponce == null)
-                    return BadRequest();
+            var registrationResponce = await _userService.Register(request);
 
-                return Ok(registrationResponce);
-            }
-            catch (Exception e)
-            {
-                return BadRequest(new { message = e.Message });
-            }
+            if (registrationResponce == null)
+                return BadRequest();
+
+            return Ok(registrationResponce);
+
         }
 
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login(LoginRequest loginRequest)
         {
-            try
-            {
-                var token = await _userService.Login(loginRequest);
-                return (token is null) ? NotFound() : Ok(new { Token = token });
-            }
-            catch (Exception e)
-            {
-                return BadRequest(new { message = e.Message });
-            }
+
+            var token = await _userService.Login(loginRequest);
+            return (token is null) ? NotFound() : Ok(new { Token = token });
         }
 
         [HttpGet]

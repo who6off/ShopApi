@@ -36,6 +36,7 @@ namespace HelloApi.Repositories
                 }
                 catch (Exception e)
                 {
+                    //TODO: Add Log!
                     return null;
                 }
 
@@ -56,6 +57,7 @@ namespace HelloApi.Repositories
                 }
                 catch (Exception e)
                 {
+                    //TODO: Add Log
                     return null;
                 }
             });
