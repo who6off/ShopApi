@@ -56,5 +56,64 @@ namespace HelloApi.Repositories
                 return null;
             }
         }
+
+        public async Task<OrderItem?> FindOrderItem(int orderId, int productId)
+        {
+            try
+            {
+                var orderItem = await _context
+                    .Orders
+                    .Include(o => o.OrderItems)
+                    .Where(o => o.Id == orderId)
+                    .Select(o => o.OrderItems.Where(oi => oi.ProductId == productId))
+                    .FirstOrDefaultAsync();
+
+                return orderItem?.First();
+            }
+            catch (Exception e)
+            {
+                //TODO: Add log
+                return null;
+            }
+        }
+
+        public async Task<OrderItem?> GetOrderItemById(int id)
+        {
+            try
+            {
+                var orderItem = await _context
+                    .Orders
+                    .Where(o => o.OrderItems.Any(oi => oi.Id == id))
+                    .Select(o => o.OrderItems.Where(oi => oi.Id == id))
+                    .FirstOrDefaultAsync();
+
+                return orderItem?.First();
+            }
+            catch (Exception e)
+            {
+                //TODO: Add log
+                return null;
+            }
+        }
+
+
+        public Task<OrderItem?> UpdateOrderItem(OrderItem orderItem)
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    _context.ChangeTracker.Clear();
+                    var updetedOrderItem = _context.Update<OrderItem>(orderItem);
+                    _context.SaveChanges();
+                    return updetedOrderItem.Entity;
+                }
+                catch (Exception e)
+                {
+                    //TODO: Add log
+                    return null;
+                }
+            });
+        }
     }
 }

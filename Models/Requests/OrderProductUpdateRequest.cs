@@ -2,13 +2,11 @@
 
 namespace HelloApi.Models.Requests
 {
-    public class OrderProductRequest
+    public class OrderProductUpdateRequest
     {
-        public int ProductId { get; set; }
+        public int Id { get; set; }
 
         [Range(1, uint.MaxValue)]
         public uint Amount { get; set; }
-
-        public int? OrderId { get; set; }
     }
 }

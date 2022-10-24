@@ -14,10 +14,13 @@ namespace HelloApi.Services
             _orderRepository = orderRepository;
         }
 
+
         public async Task<Order?> GetById(int id)
         {
             return await _orderRepository.GetById(id);
         }
+
+
         public async Task<Order?> Add(Order order)
         {
             var existingOrder = await _orderRepository.FindUnrequestedForDeliveryOrder(order.BuyerId);
@@ -28,11 +31,30 @@ namespace HelloApi.Services
             return newOrder;
         }
 
+
+        public async Task<OrderItem?> GetOrderItemById(int id)
+        {
+            var orderItem = await _orderRepository.GetOrderItemById(id);
+            return orderItem;
+        }
+
+
         public async Task<OrderItem?> AddProductToOrder(OrderProductRequest request, int buyerId)
         {
             var orderId =
                 request.OrderId ??
                 (await _orderRepository.FindUnrequestedForDeliveryOrder(buyerId))?.Id;
+
+            if (orderId is not null)
+            {
+                var orderItem = await _orderRepository.FindOrderItem(orderId.Value, request.ProductId);
+
+                if (orderItem is not null)
+                {
+                    orderItem.Amount += request.Amount;
+                    return await _orderRepository.UpdateOrderItem(orderItem);
+                }
+            }
 
             if (orderId is null)
                 orderId = (await _orderRepository.Add(new Order()
@@ -41,17 +63,30 @@ namespace HelloApi.Services
                     Date = DateTime.Now
                 }))?.Id;
 
-            if (orderId is null)
-                return null;
+            var result = (orderId is null)
+                ? null
+                : await _orderRepository.AddProductToOrder(new OrderItem()
+                {
+                    ProductId = request.ProductId,
+                    Amount = request.Amount,
+                    OrderId = orderId.Value,
+                });
 
-            var orderItem = await _orderRepository.AddProductToOrder(new OrderItem()
+            return result;
+        }
+
+
+        public async Task<OrderItem?> UpdateProductInOrder(OrderProductUpdateRequest request, OrderItem orderItem)
+        {
+            var updatedOrderItem = await _orderRepository.UpdateOrderItem(new OrderItem()
             {
-                ProductId = request.ProductId,
+                Id = request.Id,
                 Amount = request.Amount,
-                OrderId = orderId.Value,
+                ProductId = orderItem.ProductId,
+                OrderId = orderItem.OrderId
             });
 
-            return orderItem;
+            return updatedOrderItem;
         }
 
     }
