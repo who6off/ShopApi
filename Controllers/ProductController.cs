@@ -31,18 +31,18 @@ namespace HelloApi.Controllers
         [HttpPost]
         [Consumes("multipart/form-data")]
         [Authorize(Roles = UserRoles.Seller)]
-        public async Task<IActionResult> CreateProduct([FromForm] ProductCreationRequest req)
+        public async Task<IActionResult> CreateProduct([FromForm] ProductCreationRequest request)
         {
             var sellerId = HttpContext.User.GetUserId();
             if (sellerId is null) return StatusCode(StatusCodes.Status403Forbidden);
 
             var result = await _productService.Add(new Product()
             {
-                Name = req.Name,
-                Price = req.Price,
-                CategoryId = req.CategoryId,
+                Name = request.Name,
+                Price = request.Price,
+                CategoryId = request.CategoryId,
                 SellerId = sellerId.Value,
-            }, req.Image);
+            }, request.Image);
 
             return (result is null) ? BadRequest() : Ok(result);
         }
@@ -50,19 +50,19 @@ namespace HelloApi.Controllers
         [HttpPut]
         [Consumes("multipart/form-data")]
         [Authorize(Roles = UserRoles.Seller)]
-        public async Task<IActionResult> UpdateProduct([FromForm] ProductUpdateRequest req)
+        public async Task<IActionResult> UpdateProduct([FromForm] ProductUpdateRequest request)
         {
-            if (!(await IsPermitedSeller(req.Id)))
+            if (!(await IsPermitedSeller(request.Id)))
                 return StatusCode(StatusCodes.Status403Forbidden);
 
             var updetedProduct = await _productService.Update(new Product()
             {
-                Id = req.Id,
-                Name = req.Name,
-                Price = req.Price,
-                CategoryId = req.CategoryId,
+                Id = request.Id,
+                Name = request.Name,
+                Price = request.Price,
+                CategoryId = request.CategoryId,
                 SellerId = HttpContext.User.GetUserId().Value
-            }, req.NewImage);
+            }, request.NewImage);
 
             return (updetedProduct is null) ? BadRequest() : Ok(updetedProduct);
         }

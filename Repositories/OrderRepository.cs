@@ -18,11 +18,11 @@ namespace HelloApi.Repositories
                 .FirstAsync();
             return order;
         }
-        public async Task<Order> Add(Order order)
+        public async Task<Order?> Add(Order order)
         {
             var newOrder = await _context.Orders.AddAsync(order);
             await _context.SaveChangesAsync();
-            return newOrder.Entity;
+            return newOrder?.Entity;
         }
 
         public async Task<Order?> FindUnrequestedForDeliveryOrder(int buyerId)
@@ -41,19 +41,14 @@ namespace HelloApi.Repositories
             }
         }
 
-        public async Task<OrderItem?> AddProductToOrder(int orderId, int productId, uint amount = 1)
+        public async Task<OrderItem?> AddProductToOrder(OrderItem orderItem)
         {
             try
             {
-                var orderItem = await _context.AddAsync<OrderItem>(new OrderItem()
-                {
-                    OrderId = orderId,
-                    ProductId = productId,
-                    Amount = amount
-                });
+                var newOrderItem = await _context.AddAsync<OrderItem>(orderItem);
                 await _context.SaveChangesAsync();
 
-                return orderItem.Entity;
+                return newOrderItem.Entity;
             }
             catch
             {

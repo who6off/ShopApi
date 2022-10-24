@@ -43,7 +43,7 @@ namespace HelloApi
             {
                 options.AddPolicy(
                     AgeRestrictionPolicy.Name,
-                    p => p.AddRequirements(new AgeRestrictionPolicy(configuration.GetValue<int>("AdultAge"))));
+                    p => p.AddRequirements(new AgeRestrictionPolicy(configuration.GetAdultAge())));
             });
 
             services.AddCors();

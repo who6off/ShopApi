@@ -11,7 +11,20 @@ namespace HelloApi.Repositories
 
         public async Task<Product?> GetById(int id)
         {
-            var result = await _context.Products.FirstOrDefaultAsync(i => i.Id == id);
+            var result = await _context
+                .Products
+                .Include(i => i.Category)
+                .FirstOrDefaultAsync(i => i.Id == id);
+            return result;
+        }
+
+        public async Task<string?> GetImageById(int id)
+        {
+            var result = await _context
+                .Products
+                .Where(i => i.Id == id)
+                .Select(i => i.Image)
+                .FirstOrDefaultAsync();
             return result;
         }
 
