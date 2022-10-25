@@ -160,5 +160,25 @@ namespace HelloApi.Repositories
                 }
             });
         }
+
+
+        public Task<bool> DeleteOrderItem(OrderItem orderItem)
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    _context.ChangeTracker.Clear();
+                    var deletedOrderItem = _context.Remove<OrderItem>(orderItem);
+                    _context.SaveChanges();
+                    return (deletedOrderItem is not null);
+                }
+                catch (Exception e)
+                {
+                    //TODO: Add log
+                    return false;
+                }
+            });
+        }
     }
 }

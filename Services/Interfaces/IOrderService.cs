@@ -15,5 +15,6 @@ namespace HelloApi.Services.Interfaces
         public Task<OrderItem?> GetOrderItemById(int id);
         public Task<OrderItem?> AddProductToOrder(OrderProductRequest request, int buyerId);
         public Task<OrderItem?> UpdateProductInOrder(OrderProductUpdateRequest request, OrderItem orderItem);
+        public Task<bool> DeleteProductInOrder(OrderItem orderItem);
     }
 }

@@ -14,5 +14,6 @@ namespace HelloApi.Repositories.Interfaces
         public Task<OrderItem?> FindOrderItem(int orderId, int productId);
         public Task<OrderItem> AddProductToOrder(OrderItem orderItem);
         public Task<OrderItem?> UpdateOrderItem(OrderItem orderItem);
+        public Task<bool> DeleteOrderItem(OrderItem orderItem);
     }
 }

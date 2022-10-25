@@ -76,12 +76,12 @@ namespace HelloApi.Controllers
 
             var idDeleted = await _orderService.Delete(id);
 
-            return (idDeleted) ? Ok(idDeleted) : BadRequest();
+            return (idDeleted) ? Ok() : BadRequest();
         }
 
 
         [HttpPost]
-        [Route("product")]
+        [Route("item")]
         [Authorize]
         public async Task<IActionResult> AddProductToOrder(
             OrderProductRequest request,
@@ -117,7 +117,7 @@ namespace HelloApi.Controllers
         }
 
         [HttpPut]
-        [Route("product")]
+        [Route("item")]
         [Authorize]
         public async Task<IActionResult> UpdateOrderItem(OrderProductUpdateRequest request)
         {
@@ -132,6 +132,24 @@ namespace HelloApi.Controllers
             var result = await _orderService.UpdateProductInOrder(request, orderItem);
             return (result is null) ? BadRequest() : Ok(result);
         }
+
+        [HttpDelete]
+        [Route("item/{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteOrderItem(int id)
+        {
+            var orderItem = await _orderService.GetOrderItemById(id);
+
+            if (orderItem is null)
+                return StatusCode(StatusCodes.Status404NotFound);
+
+            if (!(await IsPermitedOrder(orderItem.OrderId.Value)))
+                return StatusCode(StatusCodes.Status403Forbidden);
+
+            var isDeleted = await _orderService.DeleteProductInOrder(orderItem);
+            return isDeleted ? Ok() : BadRequest();
+        }
+
         private async Task<bool> IsPermitedOrder(int orderId)
         {
             var buyerId = HttpContext.User.GetUserId();

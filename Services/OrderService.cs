@@ -116,5 +116,12 @@ namespace HelloApi.Services
             return updatedOrderItem;
         }
 
+        public async Task<bool> DeleteProductInOrder(OrderItem orderItem)
+        {
+            var isDeleted = await _orderRepository.DeleteOrderItem(orderItem);
+
+            return isDeleted;
+        }
+
     }
 }
