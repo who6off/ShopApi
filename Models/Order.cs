@@ -16,13 +16,12 @@ namespace HelloApi.Models
         [Required]
         public bool IsRequestedForDelivery { get; set; } = false;
 
-        [Required]
-        public int BuyerId { get; set; }
+        public int? BuyerId { get; set; }
 
-        [Required]
+        [ForeignKey("BuyerId")]
         [JsonIgnore]
-        public User Buyer { get; set; }
+        public virtual User? Buyer { get; set; }
 
-        public ICollection<OrderItem> OrderItems { get; set; }
+        public virtual ICollection<OrderItem> OrderItems { get; set; }
     }
 }

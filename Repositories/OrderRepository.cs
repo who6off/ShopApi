@@ -18,12 +18,15 @@ namespace HelloApi.Repositories
                 .FirstAsync();
             return order;
         }
+
+
         public async Task<Order?> Add(Order order)
         {
             var newOrder = await _context.Orders.AddAsync(order);
             await _context.SaveChangesAsync();
             return newOrder?.Entity;
         }
+
 
         public async Task<Order?> FindUnrequestedForDeliveryOrder(int buyerId)
         {
@@ -40,6 +43,48 @@ namespace HelloApi.Repositories
                 return null;
             }
         }
+
+
+        public Task<Order?> Update(Order order)
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    _context.ChangeTracker.Clear();
+                    var updatedOrder = _context.Orders.Update(order);
+                    _context.SaveChanges();
+                    return updatedOrder.Entity;
+                }
+                catch (Exception)
+                {
+                    //TODO: Add Log!
+                    return null;
+                }
+            });
+        }
+
+
+        public Task<bool> Delete(int id)
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    _context.ChangeTracker.Clear();
+                    var order = _context.Orders.First(i => i.Id == id);
+                    var deletedOrder = _context.Orders.Remove(order);
+                    _context.SaveChanges();
+                    return (deletedOrder is not null);
+                }
+                catch (Exception)
+                {
+                    //TODO: Add Log!
+                    return false;
+                }
+            });
+        }
+
 
         public async Task<OrderItem?> AddProductToOrder(OrderItem orderItem)
         {

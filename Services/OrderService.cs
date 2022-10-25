@@ -23,12 +23,39 @@ namespace HelloApi.Services
 
         public async Task<Order?> Add(Order order)
         {
-            var existingOrder = await _orderRepository.FindUnrequestedForDeliveryOrder(order.BuyerId);
+            var existingOrder = await _orderRepository.FindUnrequestedForDeliveryOrder(order.BuyerId.Value);
             if (existingOrder != null)
                 return null;
 
             var newOrder = await _orderRepository.Add(order);
             return newOrder;
+        }
+
+
+        public async Task<bool> Delete(int id)
+        {
+            var order = await _orderRepository.GetById(id);
+
+            if (order is null)
+                return false;
+
+            if (order.IsRequestedForDelivery)
+                return false;
+
+            var isDeleted = await _orderRepository.Delete(id);
+            return isDeleted;
+        }
+
+
+        public async Task<Order?> RequestDelivery(int id)
+        {
+            var order = await _orderRepository.GetById(id);
+            order.IsRequestedForDelivery = true;
+            order.Date = DateTime.Now;
+
+            order = await _orderRepository.Update(order);
+
+            return order;
         }
 
 

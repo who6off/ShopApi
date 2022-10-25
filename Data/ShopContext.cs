@@ -66,22 +66,30 @@ namespace HelloApi.Data
                 .HasOne(o => o.Buyer)
                 .WithMany(u => u.Orders)
                 .HasForeignKey(o => o.BuyerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Order>()
+              .HasOne(o => o.Buyer)
+              .WithMany(u => u.Orders)
+              .HasForeignKey(o => o.BuyerId)
+              .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.OrderItems)
+                .WithOne(oi => oi.Order)
+                .HasForeignKey(oi => oi.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
 
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.Order)
                 .WithMany(o => o.OrderItems)
-                .HasForeignKey(oi => oi.OrderId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(oi => oi.OrderId);
 
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.Product)
                 .WithMany(p => p.OrderItems)
-                .HasForeignKey(oi => oi.ProductId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-
+                .HasForeignKey(oi => oi.ProductId);
 
             InitData(modelBuilder);
         }

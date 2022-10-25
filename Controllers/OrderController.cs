@@ -53,6 +53,32 @@ namespace HelloApi.Controllers
             return (newOrder is null) ? BadRequest() : Ok(newOrder);
         }
 
+        [HttpPut]
+        [Route("{id}")]
+        [Authorize]
+        public async Task<IActionResult> RequestDelivery(int id)
+        {
+            if (!(await IsPermitedOrder(id)))
+                return StatusCode(StatusCodes.Status403Forbidden);
+
+            var order = await _orderService.RequestDelivery(id);
+
+            return (order is null) ? BadRequest() : Ok(order);
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteOrder(int id)
+        {
+            if (!(await IsPermitedOrder(id)))
+                return StatusCode(StatusCodes.Status403Forbidden);
+
+            var idDeleted = await _orderService.Delete(id);
+
+            return (idDeleted) ? Ok(idDeleted) : BadRequest();
+        }
+
 
         [HttpPost]
         [Route("product")]
@@ -114,8 +140,11 @@ namespace HelloApi.Controllers
 
         private async Task<bool> IsPermitedOrder(int orderId, int buyerId)
         {
-            var storedId = (await _orderService.GetById(orderId))?.BuyerId ?? 0;
-            return storedId == buyerId;
+            var order = await _orderService.GetById(orderId);
+            if (order is null)
+                return false;
+
+            return (order.BuyerId == buyerId) && !order.IsRequestedForDelivery;
         }
     }
 }

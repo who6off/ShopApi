@@ -12,6 +12,6 @@ namespace HelloApi.Models
         public string Name { get; set; } = String.Empty;
 
         [JsonIgnore]
-        public ICollection<User> Users { get; set; }
+        public virtual ICollection<User> Users { get; set; }
     }
 }

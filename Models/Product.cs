@@ -18,19 +18,21 @@ namespace HelloApi.Models
 
         public int? CategoryId { get; set; }
 
+        [ForeignKey("CategoryId")]
         [JsonIgnore]
-        public Category? Category { get; set; }
+        public virtual Category? Category { get; set; }
 
         [Required]
         public int SellerId { get; set; }
 
         [Required]
+        [ForeignKey("SellerId")]
         [JsonIgnore]
-        public User Seller { get; set; }
+        public virtual User Seller { get; set; }
 
         public string? Image { get; set; }
 
         [JsonIgnore]
-        public ICollection<OrderItem> OrderItems { get; set; }
+        public virtual ICollection<OrderItem> OrderItems { get; set; }
     }
 }

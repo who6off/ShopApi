@@ -29,16 +29,17 @@ namespace HelloApi.Models
         public int RoleId { get; set; }
 
         [Required]
-        public Role Role { get; set; }
+        [ForeignKey("RoleId")]
+        public virtual Role Role { get; set; }
 
         [Required]
         [Column(TypeName = "date")]
         public DateTime BirthDate { get; set; }
 
         [JsonIgnore]
-        public ICollection<Product> Products { get; set; }
+        public virtual ICollection<Product> Products { get; set; }
 
         [JsonIgnore]
-        public ICollection<Order> Orders { get; set; }
+        public virtual ICollection<Order> Orders { get; set; }
     }
 }
