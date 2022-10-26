@@ -102,6 +102,21 @@ namespace HelloApi.Repositories
             }
         }
 
+
+        public async Task AddProductsToOrder(OrderItem[] orderItems)
+        {
+            try
+            {
+                await _context.AddRangeAsync(orderItems);
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                //TODO: Add log
+            }
+        }
+
+
         public async Task<OrderItem?> FindOrderItem(int orderId, int productId)
         {
             try

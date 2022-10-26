@@ -42,13 +42,35 @@ namespace HelloApi.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> CreateNewOrder()
+        public async Task<IActionResult> CreateNewOrder(
+            [FromServices] IConfiguration configuration,
+            OrderCreationRequest? request = null)
         {
+            if (request is not null)
+            {
+                var age = HttpContext.User.GetUserAge();
+                var adultAge = configuration.GetAdultAge();
+                Predicate<Product?> Predicate = (age < adultAge)
+                    ? (Product? product) => product is not null && !product.Category.IsForAdults
+                    : (Product? product) => product is not null;
+
+                await Task.Run(() =>
+                {
+                    request.Items = request.Items
+                    .Where((i) =>
+                    {
+                        var product = _productService.GetById(i.ProductId).Result;
+                        return Predicate(product);
+                    })
+                    .ToArray();
+                });
+            }
+
             var newOrder = await _orderService.Add(new Order()
             {
                 BuyerId = HttpContext.User.GetUserId().Value,
                 Date = DateTime.Now,
-            });
+            }, request);
 
             return (newOrder is null) ? BadRequest() : Ok(newOrder);
         }

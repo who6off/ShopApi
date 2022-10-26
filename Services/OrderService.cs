@@ -21,13 +21,29 @@ namespace HelloApi.Services
         }
 
 
-        public async Task<Order?> Add(Order order)
+        public async Task<Order?> Add(Order order, OrderCreationRequest? request = null)
         {
             var existingOrder = await _orderRepository.FindUnrequestedForDeliveryOrder(order.BuyerId.Value);
-            if (existingOrder != null)
+            if (existingOrder is not null)
                 return null;
 
             var newOrder = await _orderRepository.Add(order);
+
+            if ((newOrder is not null) && (request is not null))
+            {
+                var items = request.Items
+                    .GroupBy(i => i.ProductId)
+                    .Select(g => new OrderItem()
+                    {
+                        ProductId = g.Key,
+                        Amount = (uint)g.Sum(i => i.Amount),
+                        OrderId = newOrder.Id
+                    })
+                    .ToArray();
+
+                await _orderRepository.AddProductsToOrder(items);
+            }
+
             return newOrder;
         }
 
