@@ -103,7 +103,7 @@ namespace HelloApi.Repositories
         }
 
 
-        public async Task AddProductsToOrder(OrderItem[] orderItems)
+        public async Task AddProductsToOrder(ICollection<OrderItem> orderItems)
         {
             try
             {
@@ -192,6 +192,23 @@ namespace HelloApi.Repositories
                 {
                     //TODO: Add log
                     return false;
+                }
+            });
+        }
+
+        public Task DeleteOrderItems(ICollection<OrderItem> orderItems)
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    _context.ChangeTracker.Clear();
+                    _context.RemoveRange(orderItems);
+                    _context.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    //TODO: Add log
                 }
             });
         }

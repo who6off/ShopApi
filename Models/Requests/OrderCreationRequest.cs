@@ -4,10 +4,10 @@ namespace HelloApi.Models.Requests
 {
     public class OrderCreationRequest
     {
-        public OrderCreationItem[] Items { get; set; }
+        public OrderRequestItem[] Items { get; set; }
     }
 
-    public class OrderCreationItem
+    public class OrderRequestItem
     {
         public int ProductId { get; set; }
 

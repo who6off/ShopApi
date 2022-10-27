@@ -7,6 +7,7 @@ namespace HelloApi.Services.Interfaces
     {
         public Task<Order?> GetById(int id);
         public Task<Order?> Add(Order order, OrderCreationRequest? request = null);
+        public Task<Order?> Update(OrderUpdateRequest request);
         public Task<bool> Delete(int id);
 
         public Task<Order?> RequestDelivery(int id);

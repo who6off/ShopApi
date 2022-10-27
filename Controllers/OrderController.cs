@@ -15,14 +15,18 @@ namespace HelloApi.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly IProductService _productService;
+        private readonly IConfiguration _configuration;
 
         public OrderController(
+            IConfiguration configuration,
             IOrderService orderService,
             IProductService productService)
         {
+            _configuration = configuration;
             _orderService = orderService;
             _productService = productService;
         }
+
 
         [HttpGet]
         [Route("{id}")]
@@ -40,31 +44,13 @@ namespace HelloApi.Controllers
             return (order is null) ? BadRequest() : Ok(order);
         }
 
+
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> CreateNewOrder(
-            [FromServices] IConfiguration configuration,
-            OrderCreationRequest? request = null)
+        public async Task<IActionResult> CreateNewOrder(OrderCreationRequest? request = null)
         {
             if (request is not null)
-            {
-                var age = HttpContext.User.GetUserAge();
-                var adultAge = configuration.GetAdultAge();
-                Predicate<Product?> Predicate = (age < adultAge)
-                    ? (Product? product) => product is not null && !product.Category.IsForAdults
-                    : (Product? product) => product is not null;
-
-                await Task.Run(() =>
-                {
-                    request.Items = request.Items
-                    .Where((i) =>
-                    {
-                        var product = _productService.GetById(i.ProductId).Result;
-                        return Predicate(product);
-                    })
-                    .ToArray();
-                });
-            }
+                request.Items = await GetPermitedRequestItems(request.Items);
 
             var newOrder = await _orderService.Add(new Order()
             {
@@ -74,6 +60,22 @@ namespace HelloApi.Controllers
 
             return (newOrder is null) ? BadRequest() : Ok(newOrder);
         }
+
+
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> UpdateOrder(OrderUpdateRequest request)
+        {
+            if (!(await IsPermitedOrder(request.OrderId)))
+                return StatusCode(StatusCodes.Status403Forbidden);
+
+            request.Items = await GetPermitedRequestItems(request.Items);
+
+            var updatedOrder = await _orderService.Update(request);
+
+            return (updatedOrder is null) ? BadRequest() : Ok(updatedOrder);
+        }
+
 
         [HttpPut]
         [Route("{id}")]
@@ -87,6 +89,7 @@ namespace HelloApi.Controllers
 
             return (order is null) ? BadRequest() : Ok(order);
         }
+
 
         [HttpDelete]
         [Route("{id}")]
@@ -185,6 +188,26 @@ namespace HelloApi.Controllers
                 return false;
 
             return (order.BuyerId == buyerId) && !order.IsRequestedForDelivery;
+        }
+
+        private async Task<OrderRequestItem[]> GetPermitedRequestItems(OrderRequestItem[] items)
+        {
+            var age = HttpContext.User.GetUserAge();
+            var adultAge = _configuration.GetAdultAge();
+            Predicate<Product?> Predicate = (age < adultAge)
+                ? (Product? product) => product is not null && !product.Category.IsForAdults
+                : (Product? product) => product is not null;
+
+            return await Task.Run(() =>
+            {
+                return items
+                .Where((i) =>
+                {
+                    var product = _productService.GetById(i.ProductId).Result;
+                    return Predicate(product);
+                })
+                .ToArray();
+            });
         }
     }
 }

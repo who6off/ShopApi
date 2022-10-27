@@ -31,12 +31,11 @@ namespace HelloApi.Services
 
             if ((newOrder is not null) && (request is not null))
             {
-                var items = request.Items
-                    .GroupBy(i => i.ProductId)
-                    .Select(g => new OrderItem()
+                var items = GroupOrderRequestItems(request.Items)
+                    .Select(i => new OrderItem()
                     {
-                        ProductId = g.Key,
-                        Amount = (uint)g.Sum(i => i.Amount),
+                        ProductId = i.ProductId,
+                        Amount = i.Amount,
                         OrderId = newOrder.Id
                     })
                     .ToArray();
@@ -45,6 +44,62 @@ namespace HelloApi.Services
             }
 
             return newOrder;
+        }
+
+
+        public async Task<Order?> Update(OrderUpdateRequest request)
+        {
+            var order = await _orderRepository.GetById(request.OrderId);
+
+            //var newItems = new List<OrderItem>();
+            //foreach (var item in request.Items)
+            //{
+            //    var existedItem = order.OrderItems.FirstOrDefault(oi => oi.ProductId == item.ProductId);
+            //    if (existedItem is null)
+            //    {
+            //        newItems.Add(new OrderItem()
+            //        {
+            //            OrderId = order.Id,
+            //            ProductId = item.ProductId,
+            //            Amount = item.Amount
+            //        });
+            //    }
+            //    else
+            //    {
+            //        existedItem.Amount = item.Amount;
+            //        newItems.Add(existedItem);
+            //        order.OrderItems.Remove(existedItem);
+            //    }
+            //}
+
+            var newItems = GroupOrderRequestItems(request.Items)
+                .Select(i =>
+                {
+                    var existedItem = order.OrderItems.FirstOrDefault(oi => oi.ProductId == i.ProductId);
+                    if (existedItem is null)
+                    {
+                        return new OrderItem()
+                        {
+                            OrderId = order.Id,
+                            ProductId = i.ProductId,
+                            Amount = i.Amount
+                        };
+                    }
+                    else
+                    {
+                        order.OrderItems.Remove(existedItem);
+                        existedItem.Amount = i.Amount;
+                        return existedItem;
+                    }
+                })
+                .ToArray();
+
+            await _orderRepository.DeleteOrderItems(order.OrderItems);
+
+            order.OrderItems = newItems;
+            var upadted = await _orderRepository.Update(order);
+
+            return upadted;
         }
 
 
@@ -139,5 +194,16 @@ namespace HelloApi.Services
             return isDeleted;
         }
 
+
+        private IEnumerable<OrderRequestItem> GroupOrderRequestItems(OrderRequestItem[] items)
+        {
+            return items
+                .GroupBy(i => i.ProductId)
+                .Select(g => new OrderRequestItem()
+                {
+                    ProductId = g.Key,
+                    Amount = (uint)g.Sum(i => i.Amount)
+                });
+        }
     }
 }
