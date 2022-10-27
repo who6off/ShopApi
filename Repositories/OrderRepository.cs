@@ -11,12 +11,49 @@ namespace HelloApi.Repositories
 
         public async Task<Order?> GetById(int id)
         {
-            var order = await _context.Orders
+            try
+            {
+                var order = await _context.Orders
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
                 .Where(o => o.Id == id)
                 .FirstAsync();
-            return order;
+                return order;
+            }
+            catch (Exception e)
+            {
+                //TODO: Add Log!
+                return null;
+            }
+        }
+
+        public IQueryable<Order> GetByUserId(int id)
+        {
+            var orders = _context.Orders
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+                .Where(o => o.BuyerId == id);
+
+            return orders;
+        }
+
+
+        public IQueryable<Order> GetBySellerId(int id)
+        {
+            var orders = _context.Orders
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+                .Where(o => o.IsRequestedForDelivery && o.OrderItems.Any(oi => oi.Product.SellerId == id))
+                .Select(o => new Order()
+                {
+                    Id = o.Id,
+                    BuyerId = o.BuyerId,
+                    Date = o.Date,
+                    IsRequestedForDelivery = o.IsRequestedForDelivery,
+                    OrderItems = o.OrderItems.Where(oi => oi.Product.SellerId == id).ToArray(),
+                });
+
+            return orders;
         }
 
 

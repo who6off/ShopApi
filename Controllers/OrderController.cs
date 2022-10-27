@@ -29,6 +29,40 @@ namespace HelloApi.Controllers
 
 
         [HttpGet]
+        [Route("user/{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetUserOrders(int id)
+        {
+            var userId = HttpContext.User.GetUserId();
+            var userRole = HttpContext.User.GetUserRole();
+
+            if (userRole != UserRoles.Admin && userId != id)
+                return StatusCode(StatusCodes.Status403Forbidden);
+
+            var orders = await _orderService.GetUserOrders(id);
+
+            return (orders is null) ? BadRequest() : Ok(orders);
+        }
+
+
+        [HttpGet]
+        [Route("seller/{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetSellerOrders(int id)
+        {
+            var userId = HttpContext.User.GetUserId();
+            var userRole = HttpContext.User.GetUserRole();
+
+            if (userRole != UserRoles.Admin && userId != id)
+                return StatusCode(StatusCodes.Status403Forbidden);
+
+            var orders = await _orderService.GetSellerOrders(id);
+
+            return (orders is null) ? BadRequest() : Ok(orders);
+        }
+
+
+        [HttpGet]
         [Route("{id}")]
         [Authorize]
         public async Task<IActionResult> GetById(int id)

@@ -2,6 +2,7 @@
 using HelloApi.Models.Requests;
 using HelloApi.Repositories.Interfaces;
 using HelloApi.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace HelloApi.Services
 {
@@ -18,6 +19,26 @@ namespace HelloApi.Services
         public async Task<Order?> GetById(int id)
         {
             return await _orderRepository.GetById(id);
+        }
+
+
+        public async Task<Order[]> GetUserOrders(int id)
+        {
+            var orders = await _orderRepository.GetByUserId(id)
+                .OrderByDescending(i => i.Id)
+                .ToArrayAsync();
+
+            return orders;
+        }
+
+
+        public async Task<Order[]> GetSellerOrders(int id)
+        {
+            var orders = await _orderRepository.GetBySellerId(id)
+                .OrderByDescending(i => i.Id)
+                .ToArrayAsync();
+
+            return orders;
         }
 
 
@@ -50,27 +71,6 @@ namespace HelloApi.Services
         public async Task<Order?> Update(OrderUpdateRequest request)
         {
             var order = await _orderRepository.GetById(request.OrderId);
-
-            //var newItems = new List<OrderItem>();
-            //foreach (var item in request.Items)
-            //{
-            //    var existedItem = order.OrderItems.FirstOrDefault(oi => oi.ProductId == item.ProductId);
-            //    if (existedItem is null)
-            //    {
-            //        newItems.Add(new OrderItem()
-            //        {
-            //            OrderId = order.Id,
-            //            ProductId = item.ProductId,
-            //            Amount = item.Amount
-            //        });
-            //    }
-            //    else
-            //    {
-            //        existedItem.Amount = item.Amount;
-            //        newItems.Add(existedItem);
-            //        order.OrderItems.Remove(existedItem);
-            //    }
-            //}
 
             var newItems = GroupOrderRequestItems(request.Items)
                 .Select(i =>

@@ -5,6 +5,8 @@ namespace HelloApi.Repositories.Interfaces
     public interface IOrderRepository
     {
         public Task<Order?> GetById(int id);
+        public IQueryable<Order> GetByUserId(int id);
+        public IQueryable<Order> GetBySellerId(int id);
         public Task<Order?> Add(Order order);
         public Task<Order?> Update(Order order);
         public Task<bool> Delete(int id);
