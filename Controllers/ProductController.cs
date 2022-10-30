@@ -20,13 +20,32 @@ namespace HelloApi.Controllers
             _productService = productService;
         }
 
+
         [HttpGet]
-        //[Authorize]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> GetAllProducts()
         {
             var result = await _productService.GetAll();
             return Ok(result);
         }
+
+
+        [HttpGet]
+        [Route("category/{id}")]
+        public async Task<IActionResult> GetProductsByCategory(int id)
+        {
+            var category = await _productService.GetCategoryById(id);
+            if (category is null)
+                return NotFound();
+
+            if (
+                (category.IsForAdults && !HttpContext.User.Identity.IsAuthenticated) ||
+                !HttpContext.User.IsAdult())
+                return StatusCode(StatusCodes.Status403Forbidden);
+
+            var result = await _productService.GetByCategory(id);
+            return Ok(result);
+        }
+
 
         [HttpPost]
         [Consumes("multipart/form-data")]
@@ -46,6 +65,7 @@ namespace HelloApi.Controllers
 
             return (result is null) ? BadRequest() : Ok(result);
         }
+
 
         [HttpPut]
         [Consumes("multipart/form-data")]
@@ -67,6 +87,7 @@ namespace HelloApi.Controllers
             return (updetedProduct is null) ? BadRequest() : Ok(updetedProduct);
         }
 
+
         [HttpDelete]
         [Route("{id}")]
         [Authorize(Roles = $"{UserRoles.Seller}, {UserRoles.Admin}")]
@@ -82,20 +103,21 @@ namespace HelloApi.Controllers
         }
 
 
-
-        [HttpGet]
-        [Route("adults")]
-        [Authorize(Policy = AgeRestrictionPolicy.Name)]
-        public IActionResult Adult()
-        {
-            return Ok(new { Message = "Adult Products" });
-        }
-
         [HttpGet]
         [Route("category")]
-        public async Task<IActionResult> GetAllCategories()
+        public async Task<IActionResult> GetNonAdultCategories()
         {
-            var result = await _productService.GetAllCategories();
+            var result = await _productService.GetCategories(false);
+            return (result is null) ? BadRequest() : Ok(result);
+        }
+
+
+        [HttpGet]
+        [Route("category/adult")]
+        [Authorize(Policy = AgeRestrictionPolicy.Name)]
+        public async Task<IActionResult> GetAdultCategories()
+        {
+            var result = await _productService.GetCategories(true);
             return (result is null) ? BadRequest() : Ok(result);
         }
 
@@ -112,6 +134,7 @@ namespace HelloApi.Controllers
             });
             return (result is null) ? BadRequest() : Ok(result);
         }
+
 
         private async Task<bool> IsPermitedSeller(int productId)
         {

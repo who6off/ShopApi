@@ -11,7 +11,10 @@ namespace HelloApi.Services.Interfaces
 
         public Task<string?> Login(LoginRequest loginRequest);
 
+
+        public Task<User> GetById(int id);
         public Task<User[]> GetAll();
+
         public Task<Role> AddRole(Role role);
 
 

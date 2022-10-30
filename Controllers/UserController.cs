@@ -1,4 +1,5 @@
 ﻿using HelloApi.Authentication;
+using HelloApi.Authorization;
 using HelloApi.Models.Requests;
 using HelloApi.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -40,9 +41,17 @@ namespace HelloApi.Controllers
             return (token is null) ? NotFound() : Ok(new { Token = token });
         }
 
+        [HttpPost]
+        [Route("profile")]
+        [Authorize]
+        public async Task<IActionResult> Profile()
+        {
+            var token = await _userService.GetById(HttpContext.User.GetUserId().Value);
+            return (token is null) ? NotFound() : Ok(new { Token = token });
+        }
+
         [HttpGet]
-        [Route("")]
-        //[Authorize(Roles = UserRoles.Admin)]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userService.GetAll();

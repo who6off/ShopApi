@@ -6,7 +6,8 @@ namespace HelloApi.Repositories.Interfaces
     {
         public Task<Product?> GetById(int id);
         public Task<string?> GetImageById(int id);
-        public Task<Product[]> GetAll();
+        public Task<Product[]> GetByCategory(int categoryId);
+        public IQueryable<Product> GetAll();
 
 
         public Task<Product> Add(Product product);

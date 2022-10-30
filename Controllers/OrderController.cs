@@ -1,6 +1,5 @@
 ﻿using HelloApi.Authentication;
 using HelloApi.Authorization;
-using HelloApi.Configuration;
 using HelloApi.Models;
 using HelloApi.Models.Requests;
 using HelloApi.Services.Interfaces;
@@ -153,14 +152,8 @@ namespace HelloApi.Controllers
             if (product is null)
                 return StatusCode(StatusCodes.Status404NotFound);
 
-            if (product.Category.IsForAdults)
-            {
-                var buyerAge = HttpContext.User.GetUserAge();
-                var adultAge = configuration.GetAdultAge();
-
-                if (buyerAge < adultAge)
-                    return StatusCode(StatusCodes.Status403Forbidden);
-            }
+            if (product.Category.IsForAdults && !HttpContext.User.IsAdult())
+                return StatusCode(StatusCodes.Status403Forbidden);
 
             if (request.OrderId is not null)
             {
@@ -226,11 +219,9 @@ namespace HelloApi.Controllers
 
         private async Task<OrderRequestItem[]> GetPermitedRequestItems(OrderRequestItem[] items)
         {
-            var age = HttpContext.User.GetUserAge();
-            var adultAge = _configuration.GetAdultAge();
-            Predicate<Product?> Predicate = (age < adultAge)
-                ? (Product? product) => product is not null && !product.Category.IsForAdults
-                : (Product? product) => product is not null;
+            Predicate<Product?> Predicate = (HttpContext.User.IsAdult())
+                ? (Product? product) => product is not null
+                : (Product? product) => product is not null && !product.Category.IsForAdults;
 
             return await Task.Run(() =>
             {

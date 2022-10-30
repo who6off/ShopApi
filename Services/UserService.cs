@@ -67,6 +67,14 @@ namespace HelloApi.Services
             return token;
         }
 
+
+        public async Task<User> GetById(int id)
+        {
+            var result = await _userRepository.GetById(id);
+            return result;
+        }
+
+
         public async Task<User[]> GetAll()
         {
             var result = await _userRepository.GetAll();

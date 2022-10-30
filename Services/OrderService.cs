@@ -97,9 +97,9 @@ namespace HelloApi.Services
             await _orderRepository.DeleteOrderItems(order.OrderItems);
 
             order.OrderItems = newItems;
-            var upadted = await _orderRepository.Update(order);
+            var updated = await _orderRepository.Update(order);
 
-            return upadted;
+            return updated;
         }
 
 

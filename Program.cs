@@ -17,10 +17,12 @@ namespace HelloApi
 {
     public class Program
     {
+        public static IConfiguration Configuration { get; private set; }
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder();
             var (services, configuration) = (builder.Services, builder.Configuration);
+            Configuration = configuration;
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                  .AddJwtBearer(options =>

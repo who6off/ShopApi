@@ -1,4 +1,5 @@
-﻿using HelloApi.Extensions;
+﻿using HelloApi.Configuration;
+using HelloApi.Extensions;
 using System.Security.Claims;
 
 namespace HelloApi.Authorization
@@ -25,6 +26,12 @@ namespace HelloApi.Authorization
 
             var userAge = DateTime.Now.GetYearDifference(birthDate);
             return userAge;
+        }
+
+
+        public static bool IsAdult(this ClaimsPrincipal user)
+        {
+            return user.GetUserAge() >= Program.Configuration.GetAdultAge();
         }
     }
 }

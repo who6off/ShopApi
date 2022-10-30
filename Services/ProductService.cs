@@ -2,13 +2,12 @@
 using HelloApi.Models;
 using HelloApi.Repositories.Interfaces;
 using HelloApi.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace HelloApi.Services
 {
     public class ProductService : IProductService
     {
-        private readonly IHostEnvironment _env;
-        private readonly IConfiguration _configuration;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IProductRepository _productRepository;
         private readonly IFileService _fileService;
@@ -26,8 +25,25 @@ namespace HelloApi.Services
 
         public async Task<Product[]> GetAll()
         {
-            return await _productRepository.GetAll();
+            var products = await _productRepository.GetAll()
+                .Where(i => !i.Category.IsForAdults)
+                .OrderByDescending(i => i.Id)
+                .ToArrayAsync();
+
+            return products;
         }
+
+
+        public async Task<Product[]> GetByCategory(int categoryId)
+        {
+            var products = await _productRepository.GetAll()
+               .Where(i => i.CategoryId == categoryId)
+               .OrderByDescending(i => i.Id)
+               .ToArrayAsync();
+
+            return products;
+        }
+
 
         public async Task<int?> GetSellerIdByProductId(int id)
         {
@@ -62,11 +78,12 @@ namespace HelloApi.Services
 
             var updatedProduct = await _productRepository.Update(product);
 
-            if ((newImage is not null) && (updatedProduct is not null))
+            if (
+                ((newImage is not null) && (updatedProduct is not null)) ||
+                (updatedProduct is null))
+            {
                 _fileService.DeleteImage(oldImage);
-
-            if (updatedProduct is null)
-                _fileService.DeleteImage(newImage);
+            }
 
             return updatedProduct;
         }
@@ -83,6 +100,13 @@ namespace HelloApi.Services
         }
 
 
+        public async Task<Category?> GetCategoryById(int id)
+        {
+            var result = await _categoryRepository.GetById(id);
+            return result;
+        }
+
+
         public async Task<Category> AddCategory(Category category)
         {
             category.Name = category.Name.FirstCharToUpper();
@@ -90,10 +114,14 @@ namespace HelloApi.Services
             return result;
         }
 
-        public async Task<Category[]> GetAllCategories()
+
+        public async Task<Category[]> GetCategories(bool isAdults)
         {
-            var result = await _categoryRepository.GetAll();
+            var result = await _categoryRepository.GetAll()
+                .Where(i => i.IsForAdults == isAdults)
+                .ToArrayAsync();
             return result;
         }
+
     }
 }

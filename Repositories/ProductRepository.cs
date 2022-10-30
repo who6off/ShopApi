@@ -76,10 +76,17 @@ namespace HelloApi.Repositories
             });
         }
 
-        public async Task<Product[]> GetAll()
+        public async Task<Product[]> GetByCategory(int categoryId)
         {
-            var rasult = await _context.Products.ToArrayAsync<Product>();
-            return rasult;
+            var products = await GetAll()
+                .Where(i => i.CategoryId == categoryId)
+                .ToArrayAsync();
+
+            return products;
+        }
+        public IQueryable<Product> GetAll()
+        {
+            return _context.Products.Include(i => i.Category).Select(i => i);
         }
     }
 }

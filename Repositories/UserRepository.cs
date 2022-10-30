@@ -25,6 +25,16 @@ namespace HelloApi.Repositories
             return result;
         }
 
+        public async Task<User?> GetById(int id)
+        {
+            var result = await _context
+               .Users
+               .Include(i => i.Role)
+               .FirstOrDefaultAsync(i => i.Id == id);
+            return result;
+        }
+
+
         public async Task<User[]> GetAll()
         {
             var result = await _context

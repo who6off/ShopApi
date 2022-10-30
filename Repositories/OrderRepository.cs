@@ -89,11 +89,12 @@ namespace HelloApi.Repositories
                 try
                 {
                     _context.ChangeTracker.Clear();
-                    var updatedOrder = _context.Orders.Update(order);
+                    var updatedOrder = _context.Orders.Update(order).Entity;
                     _context.SaveChanges();
-                    return updatedOrder.Entity;
+                    _context.Entry<Order>(updatedOrder).Collection(o => o.OrderItems).Load();
+                    return updatedOrder;
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     //TODO: Add Log!
                     return null;
