@@ -2,6 +2,7 @@ using HelloApi.Authentication;
 using HelloApi.Authorization;
 using HelloApi.Configuration;
 using HelloApi.Data;
+using HelloApi.Middleware;
 using HelloApi.Repositories;
 using HelloApi.Repositories.Interfaces;
 using HelloApi.Services;
@@ -80,12 +81,14 @@ namespace HelloApi
             services.AddScoped<IOrderService, OrderService>();
 
             var app = builder.Build();
+
+            app.UseExceptionHandlingMiddleware();
+
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseCors(i => i.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
-            app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseStaticFiles(new StaticFileOptions()
             {
@@ -94,7 +97,6 @@ namespace HelloApi
                     @$"wwwroot/{configuration.GetValue<string>("ImagesFolder")}")),
                 RequestPath = new PathString($"/{configuration.GetValue<string>("ImagesFolder")}")
             });
-
 
 
             app.UseEndpoints(i => i.MapControllers());

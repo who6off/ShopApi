@@ -24,6 +24,7 @@ namespace HelloApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllProducts()
         {
+
             var result = await _productService.GetAll();
             return Ok(result);
         }
