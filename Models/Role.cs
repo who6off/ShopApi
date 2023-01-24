@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace HelloApi.Models
+namespace ShopApi.Models
 {
     public class Role
     {

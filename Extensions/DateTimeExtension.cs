@@ -1,4 +1,4 @@
-﻿namespace HelloApi.Extensions
+﻿namespace ShopApi.Extensions
 {
     public static class DateTimeExtension
     {

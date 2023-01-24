@@ -1,4 +1,4 @@
-﻿namespace HelloApi.Authentication
+﻿namespace ShopApi.Authentication
 {
     public interface IPasswordHasher
     {

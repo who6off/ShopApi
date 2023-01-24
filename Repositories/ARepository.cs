@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace HelloApi.Repositories
+namespace ShopApi.Repositories
 {
     public abstract class ARepository<T> where T : DbContext
     {

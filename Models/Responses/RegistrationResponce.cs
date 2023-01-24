@@ -1,4 +1,4 @@
-﻿namespace HelloApi.Models.Responses
+﻿namespace ShopApi.Models.Responses
 {
     public class RegistrationResponce
     {

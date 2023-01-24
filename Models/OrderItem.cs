@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace HelloApi.Models
+namespace ShopApi.Models
 {
     public class OrderItem
     {

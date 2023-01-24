@@ -1,12 +1,12 @@
-﻿using HelloApi.Authentication;
-using HelloApi.Extensions;
-using HelloApi.Models;
-using HelloApi.Models.Requests;
-using HelloApi.Models.Responses;
-using HelloApi.Repositories.Interfaces;
-using HelloApi.Services.Interfaces;
+﻿using ShopApi.Authentication;
+using ShopApi.Extensions;
+using ShopApi.Models;
+using ShopApi.Models.Requests;
+using ShopApi.Models.Responses;
+using ShopApi.Repositories.Interfaces;
+using ShopApi.Services.Interfaces;
 
-namespace HelloApi.Services
+namespace ShopApi.Services
 {
     public class UserService : IUserService
     {

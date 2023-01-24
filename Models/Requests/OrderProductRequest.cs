@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HelloApi.Models.Requests
+namespace ShopApi.Models.Requests
 {
     public class OrderProductRequest
     {

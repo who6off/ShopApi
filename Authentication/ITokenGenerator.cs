@@ -1,6 +1,6 @@
-﻿using HelloApi.Models;
+﻿using ShopApi.Models;
 
-namespace HelloApi.Authentication
+namespace ShopApi.Authentication
 {
     public interface ITokenGenerator
     {

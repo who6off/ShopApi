@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace HelloApi.Authorization
+namespace ShopApi.Authorization
 {
     public class AgeRestrictionPolicyHandler : AuthorizationHandler<AgeRestrictionPolicy>
     {

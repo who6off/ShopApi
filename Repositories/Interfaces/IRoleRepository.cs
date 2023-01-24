@@ -1,6 +1,6 @@
-﻿using HelloApi.Models;
+﻿using ShopApi.Models;
 
-namespace HelloApi.Repositories.Interfaces
+namespace ShopApi.Repositories.Interfaces
 {
     public interface IRoleRepository
     {

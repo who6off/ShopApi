@@ -1,4 +1,4 @@
-﻿namespace HelloApi.Models.Requests
+﻿namespace ShopApi.Models.Requests
 {
     public class CategoryCreationRequest
     {

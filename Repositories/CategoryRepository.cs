@@ -1,9 +1,9 @@
-﻿using HelloApi.Data;
-using HelloApi.Models;
-using HelloApi.Repositories.Interfaces;
+﻿using ShopApi.Data;
+using ShopApi.Models;
+using ShopApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace HelloApi.Repositories
+namespace ShopApi.Repositories
 {
     public class CategoryRepository : ARepository<ShopContext>, ICategoryRepository
     {

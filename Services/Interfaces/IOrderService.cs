@@ -1,7 +1,7 @@
-﻿using HelloApi.Models;
-using HelloApi.Models.Requests;
+﻿using ShopApi.Models;
+using ShopApi.Models.Requests;
 
-namespace HelloApi.Services.Interfaces
+namespace ShopApi.Services.Interfaces
 {
     public interface IOrderService
     {

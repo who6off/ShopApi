@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace HelloApi.Migrations
+namespace ShopApi.Migrations
 {
     public partial class HashLengthChange : Migration
     {

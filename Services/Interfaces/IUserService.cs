@@ -1,9 +1,9 @@
-﻿using HelloApi.Authentication;
-using HelloApi.Models;
-using HelloApi.Models.Requests;
-using HelloApi.Models.Responses;
+﻿using ShopApi.Authentication;
+using ShopApi.Models;
+using ShopApi.Models.Requests;
+using ShopApi.Models.Responses;
 
-namespace HelloApi.Services.Interfaces
+namespace ShopApi.Services.Interfaces
 {
     public interface IUserService
     {

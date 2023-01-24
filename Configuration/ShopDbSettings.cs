@@ -1,4 +1,4 @@
-﻿namespace HelloApi.Configuration
+﻿namespace ShopApi.Configuration
 {
     public class ShopDbSettings
     {

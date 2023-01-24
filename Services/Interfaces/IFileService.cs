@@ -1,4 +1,4 @@
-﻿namespace HelloApi.Services.Interfaces
+﻿namespace ShopApi.Services.Interfaces
 {
     public interface IFileService
     {

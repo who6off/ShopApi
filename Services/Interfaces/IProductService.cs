@@ -1,6 +1,6 @@
-﻿using HelloApi.Models;
+﻿using ShopApi.Models;
 
-namespace HelloApi.Services.Interfaces
+namespace ShopApi.Services.Interfaces
 {
     public interface IProductService
     {

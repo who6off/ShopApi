@@ -1,7 +1,7 @@
-﻿using HelloApi.Services.Interfaces;
+﻿using ShopApi.Services.Interfaces;
 using Microsoft.AspNetCore.StaticFiles;
 
-namespace HelloApi.Services
+namespace ShopApi.Services
 {
     public class FileService : IFileService
     {

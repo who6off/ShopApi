@@ -1,10 +1,10 @@
-﻿using HelloApi.Extensions;
-using HelloApi.Models;
-using HelloApi.Repositories.Interfaces;
-using HelloApi.Services.Interfaces;
+﻿using ShopApi.Extensions;
+using ShopApi.Models;
+using ShopApi.Repositories.Interfaces;
+using ShopApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace HelloApi.Services
+namespace ShopApi.Services
 {
     public class ProductService : IProductService
     {

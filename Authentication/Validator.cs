@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace HelloApi.Authentication
+namespace ShopApi.Authentication
 {
     public class Validator : IValidator
     {

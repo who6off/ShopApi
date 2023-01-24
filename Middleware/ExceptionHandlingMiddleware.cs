@@ -1,4 +1,4 @@
-﻿namespace HelloApi.Middleware
+﻿namespace ShopApi.Middleware
 {
     public class ExceptionHandlingMiddleware
     {
