@@ -1,9 +1,9 @@
 ﻿using ShopApi.Data;
-using ShopApi.Models;
-using ShopApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using ShopApi.Data.Models;
+using ShopApi.Data.Repositories.Interfaces;
 
-namespace ShopApi.Repositories
+namespace ShopApi.Data.Repositories
 {
     public class RoleRepository : ARepository<ShopContext>, IRoleRepository
     {
@@ -18,7 +18,7 @@ namespace ShopApi.Repositories
 
         public async Task<Role[]> GetAll()
         {
-            var result = await _context.Roles.ToArrayAsync<Role>();
+            var result = await _context.Roles.ToArrayAsync();
             return result;
         }
     }

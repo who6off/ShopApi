@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace ShopApi.Models
+namespace ShopApi.Data.Models
 {
     public class Category
     {

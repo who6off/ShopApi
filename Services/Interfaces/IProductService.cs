@@ -1,4 +1,4 @@
-﻿using ShopApi.Models;
+﻿using ShopApi.Data.Models;
 
 namespace ShopApi.Services.Interfaces
 {

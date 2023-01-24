@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace ShopApi.Models
+namespace ShopApi.Data.Models
 {
     public class User
     {
@@ -36,10 +36,10 @@ namespace ShopApi.Models
         [Column(TypeName = "date")]
         public DateTime BirthDate { get; set; }
 
-        [JsonIgnore]
         public virtual ICollection<Product> Products { get; set; }
 
-        [JsonIgnore]
         public virtual ICollection<Order> Orders { get; set; }
+
+        public string GetRoleName() => Role.Name;
     }
 }

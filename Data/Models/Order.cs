@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace ShopApi.Models
+namespace ShopApi.Data.Models
 {
     public class Order
     {

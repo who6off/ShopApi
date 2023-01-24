@@ -2,13 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
 using ShopApi.Authorization;
-using ShopApi.Models;
+using ShopApi.Data.Models;
 using ShopApi.Models.Requests;
 using ShopApi.Services.Interfaces;
 
 namespace ShopApi.Controllers
 {
-	[ApiController]
+    [ApiController]
 	[Route("api/[controller]")]
 	public class OrderController : ControllerBase
 	{

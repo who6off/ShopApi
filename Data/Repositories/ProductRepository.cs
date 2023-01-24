@@ -1,9 +1,9 @@
 ﻿using ShopApi.Data;
-using ShopApi.Models;
-using ShopApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using ShopApi.Data.Models;
+using ShopApi.Data.Repositories.Interfaces;
 
-namespace ShopApi.Repositories
+namespace ShopApi.Data.Repositories
 {
     public class ProductRepository : ARepository<ShopContext>, IProductRepository
     {

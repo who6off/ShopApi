@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
 using ShopApi.Authorization;
-using ShopApi.Models.Requests;
+using ShopApi.Data.Models;
+using ShopApi.Models.DTOs.User;
 using ShopApi.Services.Interfaces;
 
 namespace ShopApi.Controllers
@@ -12,24 +14,36 @@ namespace ShopApi.Controllers
 	public class UserController : ControllerBase
 	{
 		private readonly IUserService _userService;
+		private readonly IMapper _mapper;
 
-		public UserController(IUserService userService)
+		public UserController(
+			IUserService userService,
+			IMapper mapper
+		)
 		{
 			_userService = userService;
+			_mapper = mapper;
 		}
 
 		[HttpPost]
 		[Route("register")]
-		public async Task<IActionResult> Register(RegistrationRequest request)
+		public async Task<IActionResult> Register(UserForCreationDTO dto)
 		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
 
-			var registrationResponce = await _userService.Register(request);
+			var user = _mapper.Map<User>(dto);
+			var registrationResult = await _userService.Register(user, dto.Password);
 
-			if (registrationResponce == null)
+			if (registrationResult is null)
+			{
 				return BadRequest();
+			}
 
-			return Ok(registrationResponce);
-
+			var resultDto = _mapper.Map<UserRegistrationResultDTO>(registrationResult);
+			return Ok(resultDto);
 		}
 
 		[HttpPost]
@@ -46,8 +60,8 @@ namespace ShopApi.Controllers
 		[Authorize]
 		public async Task<IActionResult> Profile()
 		{
-			var token = await _userService.GetById(HttpContext.User.GetUserId().Value);
-			return (token is null) ? NotFound() : Ok(new { Token = token });
+			var user = await _userService.GetById(HttpContext.User.GetUserId().Value);
+			return (user is null) ? NotFound() : Ok(user);
 		}
 
 		[HttpGet]

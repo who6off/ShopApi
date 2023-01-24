@@ -1,4 +1,6 @@
-﻿namespace ShopApi.Authentication
+﻿using ShopApi.Authentication.Interfaces;
+
+namespace ShopApi.Authentication
 {
     public class PasswordHasher : IPasswordHasher
     {

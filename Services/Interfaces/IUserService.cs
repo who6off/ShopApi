@@ -1,23 +1,22 @@
 ﻿using ShopApi.Authentication;
-using ShopApi.Models;
-using ShopApi.Models.Requests;
-using ShopApi.Models.Responses;
+using ShopApi.Data.Models;
+using ShopApi.Models.User;
 
 namespace ShopApi.Services.Interfaces
 {
-    public interface IUserService
-    {
-        public Task<RegistrationResponce> Register(RegistrationRequest request);
+	public interface IUserService
+	{
+		public Task<UserRegistrationResult> Register(User user, string password);
 
-        public Task<string?> Login(LoginRequest loginRequest);
-
-
-        public Task<User> GetById(int id);
-        public Task<User[]> GetAll();
-
-        public Task<Role> AddRole(Role role);
+		public Task<string?> Login(LoginRequest loginRequest);
 
 
-        public Task<Role[]> GetAllRoles();
-    }
+		public Task<User> GetById(int id);
+		public Task<User[]> GetAll();
+
+		public Task<Role> AddRole(Role role);
+
+
+		public Task<Role[]> GetAllRoles();
+	}
 }

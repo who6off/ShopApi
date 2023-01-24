@@ -1,6 +1,6 @@
-﻿using ShopApi.Models;
+﻿using ShopApi.Data.Models;
 
-namespace ShopApi.Repositories.Interfaces
+namespace ShopApi.Data.Repositories.Interfaces
 {
     public interface IUserRepository
     {

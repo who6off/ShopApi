@@ -1,4 +1,5 @@
-﻿using ShopApi.Extensions;
+﻿using ShopApi.Configuration;
+using ShopApi.Extensions;
 using ShopApi.Helpers;
 using System.Security.Claims;
 
@@ -31,7 +32,7 @@ namespace ShopApi.Authorization
 
 		public static bool IsAdult(this ClaimsPrincipal user)
 		{
-			return user.GetUserAge() >= ServiceAccessor.Get<IConfiguration>.GetAdultAge();
+			return user.GetUserAge() >= ServiceAccessor.Get<IConfiguration>().GetAdultAge();
 		}
 	}
 }

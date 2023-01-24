@@ -10,7 +10,7 @@
 			get => _serviceProvider;
 			set
 			{
-				if (_serviceProvider == null)
+				if (_serviceProvider is null)
 				{
 					_serviceProvider = value;
 				}
@@ -20,11 +20,6 @@
 
 		public static T? Get<T>()
 		{
-			if (_serviceProvider == null)
-			{
-				return null;
-			}
-
 			return _serviceProvider.GetService<T>();
 		}
 	}

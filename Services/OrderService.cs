@@ -1,8 +1,8 @@
-﻿using ShopApi.Models;
-using ShopApi.Models.Requests;
-using ShopApi.Repositories.Interfaces;
+﻿using ShopApi.Models.Requests;
 using ShopApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using ShopApi.Data.Models;
+using ShopApi.Data.Repositories.Interfaces;
 
 namespace ShopApi.Services
 {

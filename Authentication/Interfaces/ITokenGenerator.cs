@@ -1,6 +1,6 @@
-﻿using ShopApi.Models;
+﻿using ShopApi.Data.Models;
 
-namespace ShopApi.Authentication
+namespace ShopApi.Authentication.Interfaces
 {
     public interface ITokenGenerator
     {

@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ShopApi.Authentication;
+using ShopApi.Authentication.Interfaces;
 using ShopApi.Configuration;
-using ShopApi.Models;
+using ShopApi.Data.Models;
 
 namespace ShopApi.Data
 {

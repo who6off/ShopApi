@@ -5,13 +5,15 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ShopApi.Authentication;
+using ShopApi.Authentication.Interfaces;
 using ShopApi.Authorization;
 using ShopApi.Configuration;
 using ShopApi.Data;
+using ShopApi.Data.Repositories;
+using ShopApi.Data.Repositories.Interfaces;
 using ShopApi.Helpers;
 using ShopApi.Middleware;
 using ShopApi.Repositories;
-using ShopApi.Repositories.Interfaces;
 using ShopApi.Services;
 using ShopApi.Services.Interfaces;
 using System.Text;
@@ -64,6 +66,8 @@ namespace ShopApi
 				 options.UseSqlServer(
 					 configuration.GetConnectionString(builder.Environment.EnvironmentName));
 			 });
+
+			builder.Services.AddAutoMapper(typeof(Program));
 
 			services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 

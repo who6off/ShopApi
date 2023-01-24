@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
 using ShopApi.Authorization;
-using ShopApi.Models;
+using ShopApi.Data.Models;
 using ShopApi.Models.Requests;
 using ShopApi.Services.Interfaces;
 
