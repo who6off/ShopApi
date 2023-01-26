@@ -1,5 +1,4 @@
-﻿using ShopApi.Authentication;
-using ShopApi.Authentication.Interfaces;
+﻿using ShopApi.Authentication.Interfaces;
 using ShopApi.Data.Models;
 using ShopApi.Data.Repositories.Interfaces;
 using ShopApi.Extensions;
@@ -48,18 +47,26 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<string?> Login(LoginRequest loginRequest)
+		public async Task<UserLoginResult?> Login(string email, string password)
 		{
-			var user = await _userRepository.FindByEmail(loginRequest.Email);
+			var user = await _userRepository.FindByEmail(email);
 
-			if (user is null)
-				throw new Exception("User not found!");
+			if (
+				(user is null) ||
+				(!_passwordHasher.Verify(password, user.PasswordHash))
+			)
+			{
+				return null;
+			}
 
-			if (!_passwordHasher.Verify(loginRequest.Password, user.PasswordHash))
+			if (!_passwordHasher.Verify(password, user.PasswordHash))
+			{
 				throw new Exception("Incorrect password!");
+			}
 
 			var token = _tokenGenerator.Generate(user);
-			return token;
+
+			return new UserLoginResult() { User = user, Token = token };
 		}
 
 

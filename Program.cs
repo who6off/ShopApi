@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
@@ -12,7 +13,6 @@ using ShopApi.Data;
 using ShopApi.Data.Repositories;
 using ShopApi.Data.Repositories.Interfaces;
 using ShopApi.Helpers;
-using ShopApi.Middleware;
 using ShopApi.Repositories;
 using ShopApi.Services;
 using ShopApi.Services.Interfaces;
@@ -55,6 +55,30 @@ namespace ShopApi
 			services.AddSwaggerGen(options =>
 			{
 				options.SwaggerDoc("v1", new OpenApiInfo { Title = "ShopAPI", Version = "v1" });
+
+				options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+				{
+					Name = "Authorization",
+					Type = SecuritySchemeType.ApiKey,
+					Scheme = "Bearer",
+					BearerFormat = "JWT",
+					In = ParameterLocation.Header,
+					Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\"",
+				});
+
+				options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+				{
+					{
+						new OpenApiSecurityScheme()
+						{
+							Reference = new OpenApiReference()
+							{
+								Type = ReferenceType.SecurityScheme,
+								Id = "Bearer"
+							}
+						},
+					new string[] {}
+				}});
 			});
 			services.AddControllers();
 
@@ -90,7 +114,7 @@ namespace ShopApi
 
 			var app = builder.Build();
 
-			app.UseExceptionHandlingMiddleware();
+			//app.UseExceptionHandlingMiddleware();
 
 			app.UseRouting();
 			app.UseAuthentication();
@@ -112,11 +136,18 @@ namespace ShopApi
 			app.UseSwaggerUI(options =>
 			{
 				options.SwaggerEndpoint("/swagger/v1/swagger.json", "ShopAPI V1");
+
 			});
 
 			app.MapGet("/", (HttpContext context) =>
 			{
-				return "Hello World!";
+				var swaggerHref = context.Request.GetDisplayUrl() + "swagger";
+
+				context.Response.ContentType = "text/html";
+				return @$"
+					<p>API is launched</p>
+					<p><a href='{swaggerHref}'>Open Swagger UI</a></p>
+				";
 			});
 
 			ServiceAccessor.Services = app.Services;

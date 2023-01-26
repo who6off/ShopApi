@@ -14,6 +14,8 @@ namespace ShopApi.Configuration.MappingProfiles
 			CreateMap<User, UserDTO>();
 
 			CreateMap<UserRegistrationResult, UserRegistrationResultDTO>();
+
+			CreateMap<UserLoginResult, UserLoginResultDTO>();
 		}
 	}
 }

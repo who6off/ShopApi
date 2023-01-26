@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
 using ShopApi.Authorization;
 using ShopApi.Data.Models;
+using ShopApi.Models.DTOs.Role;
 using ShopApi.Models.DTOs.User;
 using ShopApi.Services.Interfaces;
 
@@ -25,9 +26,11 @@ namespace ShopApi.Controllers
 			_mapper = mapper;
 		}
 
+
 		[HttpPost]
+		[AllowAnonymous]
 		[Route("register")]
-		public async Task<IActionResult> Register(UserForCreationDTO dto)
+		public async Task<IActionResult> Register([FromBody] UserForCreationDTO dto)
 		{
 			if (!ModelState.IsValid)
 			{
@@ -46,39 +49,60 @@ namespace ShopApi.Controllers
 			return Ok(resultDto);
 		}
 
-		[HttpPost]
-		[Route("login")]
-		public async Task<IActionResult> Login(LoginRequest loginRequest)
-		{
 
-			var token = await _userService.Login(loginRequest);
-			return (token is null) ? NotFound() : Ok(new { Token = token });
+		[HttpPost]
+		[AllowAnonymous]
+		[Route("login")]
+		public async Task<IActionResult> Login([FromBody] UserLoginDTO dto)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var loginResult = await _userService.Login(dto.Email, dto.Password);
+
+			if (loginResult is null)
+			{
+				throw new Exception("Incorrect user credentials");
+			}
+
+			var loginResultDto = _mapper.Map<UserLoginResultDTO>(loginResult);
+			return Ok(loginResultDto);
 		}
 
-		[HttpPost]
-		[Route("profile")]
+
+		[HttpGet]
 		[Authorize]
+		[Route("profile")]
 		public async Task<IActionResult> Profile()
 		{
-			var user = await _userService.GetById(HttpContext.User.GetUserId().Value);
-			return (user is null) ? NotFound() : Ok(user);
+			var headers = Request.Headers;
+			var user = await _userService.GetById(User.GetUserId().Value);
+			return (user is null)
+				? NotFound()
+				: Ok(_mapper.Map<UserDTO>(user));
 		}
+
 
 		[HttpGet]
 		[Authorize(Roles = UserRoles.Admin)]
 		public async Task<IActionResult> GetAllUsers()
 		{
 			var users = await _userService.GetAll();
-			return Ok(users);
+			var usersMap = _mapper.Map<UserDTO[]>(users);
+			return Ok(usersMap);
 		}
 
+
 		[HttpGet]
-		[Route("roles")]
 		[Authorize(Roles = UserRoles.Admin)]
+		[Route("roles")]
 		public async Task<IActionResult> GetAllRoles()
 		{
 			var roles = await _userService.GetAllRoles();
-			return Ok(roles);
+			var rolesMap = _mapper.Map<RoleDTO[]>(roles);
+			return Ok(rolesMap);
 		}
 	}
 }
