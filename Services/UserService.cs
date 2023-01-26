@@ -1,5 +1,6 @@
 ﻿using ShopApi.Authentication.Interfaces;
 using ShopApi.Data.Models;
+using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Data.Repositories.Interfaces;
 using ShopApi.Extensions;
 using ShopApi.Models.User;
@@ -77,9 +78,9 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<User[]> GetAll()
+		public async Task<User[]> Get(UserSearchParameters searchParameters)
 		{
-			var result = await _userRepository.GetAll();
+			var result = await _userRepository.Get(searchParameters);
 			return result;
 		}
 

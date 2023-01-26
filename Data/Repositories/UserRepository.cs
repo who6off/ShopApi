@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShopApi.Data;
 using ShopApi.Data.Models;
+using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Data.Repositories;
 using ShopApi.Data.Repositories.Interfaces;
 
@@ -36,13 +37,21 @@ namespace ShopApi.Repositories
 		}
 
 
-		public async Task<User[]> GetAll()
+		public async Task<User[]> Get(UserSearchParameters searchParameters)
 		{
-			var result = await _context
+			var query = _context
 				.Users
-				.Include(u => u.Role)
-				.ToArrayAsync<User>();
-			return result;
+				.Include(i => i.Role)
+				.AsQueryable();
+
+			var count = await query.CountAsync();
+
+			var data = await query
+				.Skip(searchParameters.GetSkip())
+				.Take((int)searchParameters.PageSize)
+				.ToArrayAsync();
+
+			return data;
 		}
 	}
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
 using ShopApi.Authorization;
 using ShopApi.Data.Models;
+using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Models.DTOs.Role;
 using ShopApi.Models.DTOs.User;
 using ShopApi.Services.Interfaces;
@@ -87,9 +88,9 @@ namespace ShopApi.Controllers
 
 		[HttpGet]
 		[Authorize(Roles = UserRoles.Admin)]
-		public async Task<IActionResult> GetAllUsers()
+		public async Task<IActionResult> GetUsers([FromQuery] UserSearchParameters searchParameters)
 		{
-			var users = await _userService.GetAll();
+			var users = await _userService.Get(searchParameters);
 			var usersMap = _mapper.Map<UserDTO[]>(users);
 			return Ok(usersMap);
 		}
