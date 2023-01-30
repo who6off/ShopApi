@@ -1,5 +1,6 @@
 ﻿using ShopApi.Data.Models;
 using ShopApi.Data.Models.SearchParameters;
+using ShopApi.Helpers;
 using ShopApi.Models.User;
 
 namespace ShopApi.Services.Interfaces
@@ -12,7 +13,7 @@ namespace ShopApi.Services.Interfaces
 
 		public Task<User> GetById(int id);
 
-		public Task<User[]> Get(UserSearchParameters searchParameters);
+		public Task<PagedList<User>> Get(UserSearchParameters searchParameters);
 
 		public Task<Role> AddRole(Role role);
 

@@ -1,5 +1,6 @@
 ﻿using ShopApi.Data.Models;
 using ShopApi.Data.Models.SearchParameters;
+using ShopApi.Helpers;
 
 namespace ShopApi.Data.Repositories.Interfaces
 {
@@ -7,7 +8,7 @@ namespace ShopApi.Data.Repositories.Interfaces
 	{
 		public Task<User?> GetById(int id);
 		public Task<User?> FindByEmail(string email);
-		public Task<User[]> Get(UserSearchParameters searchParameters);
+		public Task<PagedList<User>> Get(UserSearchParameters searchParameters);
 		public Task<User> Add(User user);
 	}
 }

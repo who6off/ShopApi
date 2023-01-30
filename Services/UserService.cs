@@ -3,6 +3,7 @@ using ShopApi.Data.Models;
 using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Data.Repositories.Interfaces;
 using ShopApi.Extensions;
+using ShopApi.Helpers;
 using ShopApi.Models.User;
 using ShopApi.Services.Interfaces;
 
@@ -78,7 +79,7 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<User[]> Get(UserSearchParameters searchParameters)
+		public async Task<PagedList<User>> Get(UserSearchParameters searchParameters)
 		{
 			var result = await _userRepository.Get(searchParameters);
 			return result;
