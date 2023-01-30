@@ -5,6 +5,7 @@ using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Data.Repositories;
 using ShopApi.Data.Repositories.Interfaces;
 using ShopApi.Helpers;
+using ShopApi.Helpers.Interfaces;
 
 namespace ShopApi.Repositories
 {
@@ -38,7 +39,7 @@ namespace ShopApi.Repositories
 		}
 
 
-		public async Task<PagedList<User>> Get(UserSearchParameters searchParameters)
+		public async Task<IPageData<User>> Get(UserSearchParameters searchParameters)
 		{
 			var query = _context
 				.Users
@@ -52,7 +53,7 @@ namespace ShopApi.Repositories
 				.Take((int)searchParameters.PageSize)
 				.ToArrayAsync();
 
-			var pagedList = new PagedList<User>(data, searchParameters.Page, searchParameters.PageSize, (uint)totalAmount);
+			var pagedList = new PageData<User>(data, searchParameters.Page, searchParameters.PageSize, (uint)totalAmount);
 			return pagedList;
 		}
 	}

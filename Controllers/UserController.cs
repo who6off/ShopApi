@@ -91,7 +91,7 @@ namespace ShopApi.Controllers
 		public async Task<IActionResult> GetUsers([FromQuery] UserSearchParameters searchParameters)
 		{
 			var users = await _userService.Get(searchParameters);
-			var usersMap = _mapper.Map<UserDTO[]>(users);
+			var usersMap = users.Map<UserDTO>(_mapper);
 			return Ok(usersMap);
 		}
 
@@ -99,10 +99,10 @@ namespace ShopApi.Controllers
 		[HttpGet]
 		[Authorize(Roles = UserRoles.Admin)]
 		[Route("roles")]
-		public async Task<IActionResult> GetAllRoles()
+		public async Task<IActionResult> GetRoles([FromQuery] RoleSearchParameters searchParameters)
 		{
-			var roles = await _userService.GetAllRoles();
-			var rolesMap = _mapper.Map<RoleDTO[]>(roles);
+			var roles = await _userService.GetRoles(searchParameters);
+			var rolesMap = roles.Map<RoleDTO>(_mapper);
 			return Ok(rolesMap);
 		}
 	}
