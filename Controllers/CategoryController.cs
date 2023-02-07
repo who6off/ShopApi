@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using InvoiceApp.Helpers.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
@@ -33,6 +34,23 @@ namespace ShopApi.Controllers
 			var categories = await _categoryService.Get(parameters);
 			var categoriesMap = categories.Map<CategoryDTO>(_mapper);
 			return Ok(categoriesMap);
+		}
+
+
+		[HttpGet]
+		[AllowAnonymous]
+		[Route("{id:required}")]
+		public async Task<IActionResult> GetById(int id)
+		{
+			var category = await _categoryService.GetById(id);
+
+			if (category is null)
+			{
+				throw new NotFoundException("This category is not found!");
+			}
+
+			var categoryDTO = _mapper.Map<CategoryDTO>(category);
+			return Ok(categoryDTO);
 		}
 
 

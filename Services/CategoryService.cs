@@ -81,9 +81,23 @@ namespace ShopApi.Services
 		}
 
 
-		public Task<Category?> GetById(int id)
+		public async Task<Category?> GetById(int id)
 		{
-			throw new NotImplementedException();
+			var category = await _repository.GetById(id);
+
+			if (category is null)
+			{
+				return null;
+			}
+
+			var user = _httpContextAccessor.HttpContext.User;
+
+			if (category.IsForAdults && ((user is null) || (user?.IsAdult() == false)))
+			{
+				throw new Exception("Access denied");
+			}
+
+			return category;
 		}
 	}
 }

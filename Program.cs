@@ -13,6 +13,7 @@ using ShopApi.Data;
 using ShopApi.Data.Repositories;
 using ShopApi.Data.Repositories.Interfaces;
 using ShopApi.Helpers;
+using ShopApi.Middleware;
 using ShopApi.Repositories;
 using ShopApi.Services;
 using ShopApi.Services.Interfaces;
@@ -115,7 +116,7 @@ namespace ShopApi
 
 			var app = builder.Build();
 
-			//app.UseExceptionHandlingMiddleware();
+			app.UseExceptionHandlingMiddleware();
 
 			app.UseRouting();
 			app.UseAuthentication();
