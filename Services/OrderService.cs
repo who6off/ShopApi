@@ -1,209 +1,209 @@
-﻿using ShopApi.Models.Requests;
-using ShopApi.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ShopApi.Data.Models;
 using ShopApi.Data.Repositories.Interfaces;
+using ShopApi.Models.Requests;
+using ShopApi.Services.Interfaces;
 
 namespace ShopApi.Services
 {
-    public class OrderService : IOrderService
-    {
-        private readonly IOrderRepository _orderRepository;
+	public class OrderService : IOrderService
+	{
+		private readonly IOrderRepository _orderRepository;
 
-        public OrderService(IOrderRepository orderRepository)
-        {
-            _orderRepository = orderRepository;
-        }
-
-
-        public async Task<Order?> GetById(int id)
-        {
-            return await _orderRepository.GetById(id);
-        }
+		public OrderService(IOrderRepository orderRepository)
+		{
+			_orderRepository = orderRepository;
+		}
 
 
-        public async Task<Order[]> GetUserOrders(int id)
-        {
-            var orders = await _orderRepository.GetByUserId(id)
-                .OrderByDescending(i => i.Id)
-                .ToArrayAsync();
-
-            return orders;
-        }
+		public async Task<Order?> GetById(int id)
+		{
+			return await _orderRepository.GetById(id);
+		}
 
 
-        public async Task<Order[]> GetSellerOrders(int id)
-        {
-            var orders = await _orderRepository.GetBySellerId(id)
-                .OrderByDescending(i => i.Id)
-                .ToArrayAsync();
+		public async Task<Order[]> GetUserOrders(int id)
+		{
+			var orders = await _orderRepository.GetByUserId(id)
+				.OrderByDescending(i => i.Id)
+				.ToArrayAsync();
 
-            return orders;
-        }
-
-
-        public async Task<Order?> Add(Order order, OrderCreationRequest? request = null)
-        {
-            var existingOrder = await _orderRepository.FindUnrequestedForDeliveryOrder(order.BuyerId.Value);
-            if (existingOrder is not null)
-                return null;
-
-            var newOrder = await _orderRepository.Add(order);
-
-            if ((newOrder is not null) && (request is not null))
-            {
-                var items = GroupOrderRequestItems(request.Items)
-                    .Select(i => new OrderItem()
-                    {
-                        ProductId = i.ProductId,
-                        Amount = i.Amount,
-                        OrderId = newOrder.Id
-                    })
-                    .ToArray();
-
-                await _orderRepository.AddProductsToOrder(items);
-            }
-
-            return newOrder;
-        }
+			return orders;
+		}
 
 
-        public async Task<Order?> Update(OrderUpdateRequest request)
-        {
-            var order = await _orderRepository.GetById(request.OrderId);
+		public async Task<Order[]> GetSellerOrders(int id)
+		{
+			var orders = await _orderRepository.GetBySellerId(id)
+				.OrderByDescending(i => i.Id)
+				.ToArrayAsync();
 
-            var newItems = GroupOrderRequestItems(request.Items)
-                .Select(i =>
-                {
-                    var existedItem = order.OrderItems.FirstOrDefault(oi => oi.ProductId == i.ProductId);
-                    if (existedItem is null)
-                    {
-                        return new OrderItem()
-                        {
-                            OrderId = order.Id,
-                            ProductId = i.ProductId,
-                            Amount = i.Amount
-                        };
-                    }
-                    else
-                    {
-                        order.OrderItems.Remove(existedItem);
-                        existedItem.Amount = i.Amount;
-                        return existedItem;
-                    }
-                })
-                .ToArray();
-
-            await _orderRepository.DeleteOrderItems(order.OrderItems);
-
-            order.OrderItems = newItems;
-            var updated = await _orderRepository.Update(order);
-
-            return updated;
-        }
+			return orders;
+		}
 
 
-        public async Task<bool> Delete(int id)
-        {
-            var order = await _orderRepository.GetById(id);
+		public async Task<Order?> Add(Order order, OrderCreationRequest? request = null)
+		{
+			var existingOrder = await _orderRepository.FindUnrequestedForDeliveryOrder(order.BuyerId.Value);
+			if (existingOrder is not null)
+				return null;
 
-            if (order is null)
-                return false;
+			var newOrder = await _orderRepository.Add(order);
 
-            if (order.IsRequestedForDelivery)
-                return false;
+			if ((newOrder is not null) && (request is not null))
+			{
+				var items = GroupOrderRequestItems(request.Items)
+					.Select(i => new OrderItem()
+					{
+						ProductId = i.ProductId,
+						Amount = i.Amount,
+						OrderId = newOrder.Id
+					})
+					.ToArray();
 
-            var isDeleted = await _orderRepository.Delete(id);
-            return isDeleted;
-        }
+				await _orderRepository.AddProductsToOrder(items);
+			}
 
-
-        public async Task<Order?> RequestDelivery(int id)
-        {
-            var order = await _orderRepository.GetById(id);
-            order.IsRequestedForDelivery = true;
-            order.Date = DateTime.Now;
-
-            order = await _orderRepository.Update(order);
-
-            return order;
-        }
-
-
-        public async Task<OrderItem?> GetOrderItemById(int id)
-        {
-            var orderItem = await _orderRepository.GetOrderItemById(id);
-            return orderItem;
-        }
+			return newOrder;
+		}
 
 
-        public async Task<OrderItem?> AddProductToOrder(OrderProductRequest request, int buyerId)
-        {
-            var orderId =
-                request.OrderId ??
-                (await _orderRepository.FindUnrequestedForDeliveryOrder(buyerId))?.Id;
+		public async Task<Order?> Update(OrderUpdateRequest request)
+		{
+			var order = await _orderRepository.GetById(request.OrderId);
 
-            if (orderId is not null)
-            {
-                var orderItem = await _orderRepository.FindOrderItem(orderId.Value, request.ProductId);
+			var newItems = GroupOrderRequestItems(request.Items)
+				.Select(i =>
+				{
+					var existedItem = order.OrderItems.FirstOrDefault(oi => oi.ProductId == i.ProductId);
+					if (existedItem is null)
+					{
+						return new OrderItem()
+						{
+							OrderId = order.Id,
+							ProductId = i.ProductId,
+							Amount = i.Amount
+						};
+					}
+					else
+					{
+						order.OrderItems.Remove(existedItem);
+						existedItem.Amount = i.Amount;
+						return existedItem;
+					}
+				})
+				.ToArray();
 
-                if (orderItem is not null)
-                {
-                    orderItem.Amount += request.Amount;
-                    return await _orderRepository.UpdateOrderItem(orderItem);
-                }
-            }
+			await _orderRepository.DeleteOrderItems(order.OrderItems);
 
-            if (orderId is null)
-                orderId = (await _orderRepository.Add(new Order()
-                {
-                    BuyerId = buyerId,
-                    Date = DateTime.Now
-                }))?.Id;
+			order.OrderItems = newItems;
+			var updated = await _orderRepository.Update(order);
 
-            var result = (orderId is null)
-                ? null
-                : await _orderRepository.AddProductToOrder(new OrderItem()
-                {
-                    ProductId = request.ProductId,
-                    Amount = request.Amount,
-                    OrderId = orderId.Value,
-                });
-
-            return result;
-        }
+			return updated;
+		}
 
 
-        public async Task<OrderItem?> UpdateProductInOrder(OrderProductUpdateRequest request, OrderItem orderItem)
-        {
-            var updatedOrderItem = await _orderRepository.UpdateOrderItem(new OrderItem()
-            {
-                Id = request.Id,
-                Amount = request.Amount,
-                ProductId = orderItem.ProductId,
-                OrderId = orderItem.OrderId
-            });
+		public async Task<bool> Delete(int id)
+		{
+			var order = await _orderRepository.GetById(id);
 
-            return updatedOrderItem;
-        }
+			if (order is null)
+				return false;
 
-        public async Task<bool> DeleteProductInOrder(OrderItem orderItem)
-        {
-            var isDeleted = await _orderRepository.DeleteOrderItem(orderItem);
+			if (order.IsRequestedForDelivery)
+				return false;
 
-            return isDeleted;
-        }
+			var isDeleted = await _orderRepository.Delete(id);
+			return isDeleted;
+		}
 
 
-        private IEnumerable<OrderRequestItem> GroupOrderRequestItems(OrderRequestItem[] items)
-        {
-            return items
-                .GroupBy(i => i.ProductId)
-                .Select(g => new OrderRequestItem()
-                {
-                    ProductId = g.Key,
-                    Amount = (uint)g.Sum(i => i.Amount)
-                });
-        }
-    }
+		public async Task<Order?> RequestDelivery(int id)
+		{
+			var order = await _orderRepository.GetById(id);
+			order.IsRequestedForDelivery = true;
+			order.Date = DateTime.Now;
+
+			order = await _orderRepository.Update(order);
+
+			return order;
+		}
+
+
+		public async Task<OrderItem?> GetOrderItemById(int id)
+		{
+			var orderItem = await _orderRepository.GetOrderItemById(id);
+			return orderItem;
+		}
+
+
+		public async Task<OrderItem?> AddProductToOrder(OrderProductRequest request, int buyerId)
+		{
+			var orderId =
+				request.OrderId ??
+				(await _orderRepository.FindUnrequestedForDeliveryOrder(buyerId))?.Id;
+
+			if (orderId is not null)
+			{
+				var orderItem = await _orderRepository.FindOrderItem(orderId.Value, request.ProductId);
+
+				if (orderItem is not null)
+				{
+					orderItem.Amount += request.Amount;
+					return await _orderRepository.UpdateOrderItem(orderItem);
+				}
+			}
+
+			if (orderId is null)
+				orderId = (await _orderRepository.Add(new Order()
+				{
+					BuyerId = buyerId,
+					Date = DateTime.Now
+				}))?.Id;
+
+			var result = (orderId is null)
+				? null
+				: await _orderRepository.AddProductToOrder(new OrderItem()
+				{
+					ProductId = request.ProductId,
+					Amount = request.Amount,
+					OrderId = orderId.Value,
+				});
+
+			return result;
+		}
+
+
+		public async Task<OrderItem?> UpdateProductInOrder(OrderProductUpdateRequest request, OrderItem orderItem)
+		{
+			var updatedOrderItem = await _orderRepository.UpdateOrderItem(new OrderItem()
+			{
+				Id = request.Id,
+				Amount = request.Amount,
+				ProductId = orderItem.ProductId,
+				OrderId = orderItem.OrderId
+			});
+
+			return updatedOrderItem;
+		}
+
+		public async Task<bool> DeleteProductInOrder(OrderItem orderItem)
+		{
+			var isDeleted = await _orderRepository.DeleteOrderItem(orderItem);
+
+			return isDeleted;
+		}
+
+
+		private IEnumerable<OrderRequestItem> GroupOrderRequestItems(OrderRequestItem[] items)
+		{
+			return items
+				.GroupBy(i => i.ProductId)
+				.Select(g => new OrderRequestItem()
+				{
+					ProductId = g.Key,
+					Amount = (uint)g.Sum(i => i.Amount)
+				});
+		}
+	}
 }

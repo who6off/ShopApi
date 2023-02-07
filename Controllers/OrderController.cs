@@ -8,7 +8,7 @@ using ShopApi.Services.Interfaces;
 
 namespace ShopApi.Controllers
 {
-    [ApiController]
+	[ApiController]
 	[Route("api/[controller]")]
 	public class OrderController : ControllerBase
 	{

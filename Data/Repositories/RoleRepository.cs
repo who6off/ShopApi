@@ -26,10 +26,10 @@ namespace ShopApi.Data.Repositories
 
 			var data = await query
 				.Skip(parameters.GetSkip())
-				.Take((int)parameters.PageSize)
+				.Take(parameters.PageSize)
 			.ToArrayAsync();
 
-			var pagedList = new PageData<Role>(data, parameters.Page, parameters.PageSize, (uint)totalAmount);
+			var pagedList = new PageData<Role>(data, parameters.Page, parameters.PageSize, totalAmount);
 			return pagedList;
 		}
 	}

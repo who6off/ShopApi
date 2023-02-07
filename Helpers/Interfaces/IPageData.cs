@@ -4,10 +4,10 @@ namespace ShopApi.Helpers.Interfaces
 {
 	public interface IPageData<T>
 	{
-		public uint PageSize { get; }
-		public uint TotalAmount { get; }
-		public uint PagesAmount { get; }
-		public uint CurrentPage { get; }
+		public int PageSize { get; }
+		public int TotalAmount { get; }
+		public int PagesAmount { get; }
+		public int CurrentPage { get; }
 		public IEnumerable<T> Data { get; }
 		public bool HasPrevious { get; }
 		public bool HasNext { get; }

@@ -53,8 +53,8 @@ namespace ShopApi.Repositories
 				.Take((int)searchParameters.PageSize)
 				.ToArrayAsync();
 
-			var pagedList = new PageData<User>(data, searchParameters.Page, searchParameters.PageSize, (uint)totalAmount);
-			return pagedList;
+			var pageData = new PageData<User>(data, searchParameters.Page, searchParameters.PageSize, totalAmount);
+			return pageData;
 		}
 	}
 }
