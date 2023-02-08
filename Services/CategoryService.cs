@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ShopApi.Helpers.Exceptions;
 using ShopApi.Authorization;
 using ShopApi.Data.Models;
 using ShopApi.Data.Models.SearchParameters;
@@ -39,7 +40,7 @@ namespace ShopApi.Services
 
 			if (category is null)
 			{
-				return null;
+				throw new NotFoundException("This category is not found!");
 			}
 
 			_mapper.Map(dto, category);
@@ -66,7 +67,7 @@ namespace ShopApi.Services
 				((user is not null) && (user.IsAdult() == false) && parameters.IsForAdults.Value))
 			)
 			{
-				throw new Exception("Access denied");
+				throw new AccessDeniedException("Access denied");
 			}
 
 			if (
@@ -94,7 +95,7 @@ namespace ShopApi.Services
 
 			if (category.IsForAdults && ((user is null) || (user?.IsAdult() == false)))
 			{
-				throw new Exception("Access denied");
+				throw new AccessDeniedException("Access denied");
 			}
 
 			return category;

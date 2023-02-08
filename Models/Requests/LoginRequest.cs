@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ShopApi.Models.DTOs.User
+namespace ShopApi.Models.Requests
 {
-	public class UserLoginDTO
+	public class LoginRequest
 	{
 		[Required]
 		public string Email { get; set; }

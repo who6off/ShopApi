@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace InvoiceApp.Helpers.Exceptions
+namespace ShopApi.Helpers.Exceptions
 {
 	public class AccessDeniedException : AppException
 	{

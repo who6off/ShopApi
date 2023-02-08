@@ -56,5 +56,45 @@ namespace ShopApi.Repositories
 			var pageData = new PageData<User>(data, searchParameters.Page, searchParameters.PageSize, totalAmount);
 			return pageData;
 		}
+
+
+		public async Task<User?> Update(User user)
+		{
+			return await Task.Run(async () =>
+			{
+				try
+				{
+					_context.ChangeTracker.Clear();
+					var enityEntry = _context.Users.Update(user);
+					_context.SaveChanges();
+					return await GetById(user.Id);
+				}
+				catch (Exception e)
+				{
+					return null;
+				}
+			});
+		}
+
+
+		public async Task<User?> Delete(int id)
+		{
+			return await Task.Run(async () =>
+			{
+				try
+				{
+					var user = await GetById(id);
+
+					_context.ChangeTracker.Clear();
+					var enityEntry = _context.Users.Remove(user);
+					_context.SaveChanges();
+					return user;
+				}
+				catch (Exception e)
+				{
+					return null;
+				}
+			});
+		}
 	}
 }

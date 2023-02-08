@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using ShopApi.Data.Models;
 using ShopApi.Models.DTOs.User;
-using ShopApi.Models.User;
 
 namespace ShopApi.Configuration.MappingProfiles
 {
@@ -9,13 +8,13 @@ namespace ShopApi.Configuration.MappingProfiles
 	{
 		public UserProfile()
 		{
-			CreateMap<UserForCreationDTO, User>();
-
 			CreateMap<User, UserDTO>();
 
-			CreateMap<UserRegistrationResult, UserRegistrationResultDTO>();
+			CreateMap<UserForRegistrationDTO, User>();
 
-			CreateMap<UserLoginResult, UserLoginResultDTO>();
+			CreateMap<UserForCreationDTO, User>();
+
+			CreateMap<UserForUpdateDTO, User>();
 		}
 	}
 }

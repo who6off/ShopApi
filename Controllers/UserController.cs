@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
 using ShopApi.Authorization;
-using ShopApi.Data.Models;
 using ShopApi.Data.Models.SearchParameters;
+using ShopApi.Helpers.Exceptions;
 using ShopApi.Models.DTOs.Role;
 using ShopApi.Models.DTOs.User;
+using ShopApi.Models.Requests;
 using ShopApi.Services.Interfaces;
 
 namespace ShopApi.Controllers
@@ -30,46 +31,43 @@ namespace ShopApi.Controllers
 
 		[HttpPost]
 		[AllowAnonymous]
-		[Route("register")]
-		public async Task<IActionResult> Register([FromBody] UserForCreationDTO dto)
+		[Route("registration")]
+		public async Task<IActionResult> Register([FromBody] UserForRegistrationDTO dto)
 		{
 			if (!ModelState.IsValid)
 			{
 				return BadRequest(ModelState);
 			}
 
-			var user = _mapper.Map<User>(dto);
-			var registrationResult = await _userService.Register(user, dto.Password);
+			var registrationResult = await _userService.Register(dto);
 
 			if (registrationResult is null)
 			{
-				return BadRequest();
+				throw new AppException("Registration error");
 			}
 
-			var resultDto = _mapper.Map<UserRegistrationResultDTO>(registrationResult);
-			return Ok(resultDto);
+			return Ok(registrationResult);
 		}
 
 
 		[HttpPost]
 		[AllowAnonymous]
 		[Route("login")]
-		public async Task<IActionResult> Login([FromBody] UserLoginDTO dto)
+		public async Task<IActionResult> Login([FromBody] LoginRequest request)
 		{
 			if (!ModelState.IsValid)
 			{
 				return BadRequest(ModelState);
 			}
 
-			var loginResult = await _userService.Login(dto.Email, dto.Password);
+			var loginResult = await _userService.Login(request);
 
 			if (loginResult is null)
 			{
 				throw new Exception("Incorrect user credentials");
 			}
 
-			var loginResultDto = _mapper.Map<UserLoginResultDTO>(loginResult);
-			return Ok(loginResultDto);
+			return Ok(loginResult);
 		}
 
 
@@ -78,11 +76,14 @@ namespace ShopApi.Controllers
 		[Route("profile")]
 		public async Task<IActionResult> Profile()
 		{
-			var headers = Request.Headers;
 			var user = await _userService.GetById(User.GetUserId().Value);
-			return (user is null)
-				? NotFound()
-				: Ok(_mapper.Map<UserDTO>(user));
+
+			if (user is null)
+			{
+				throw new NotFoundException("User is not found");
+			}
+
+			return Ok(user);
 		}
 
 
@@ -93,6 +94,69 @@ namespace ShopApi.Controllers
 			var users = await _userService.Get(searchParameters);
 			var usersMap = users.Map<UserDTO>(_mapper);
 			return Ok(usersMap);
+		}
+
+
+		[HttpPost]
+		[Authorize(Roles = UserRoles.Admin)]
+		public async Task<IActionResult> AddUser([FromBody] UserForCreationDTO dto)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var newUser = await _userService.Add(dto);
+
+			if (newUser is null)
+			{
+				throw new AppException("Creation error!");
+			}
+
+			return Ok(newUser);
+		}
+
+
+
+		[HttpPut]
+		[Authorize(Roles = UserRoles.Admin)]
+		[Route("{id:required}")]
+		public async Task<IActionResult> UpdateUser([FromRoute] int id, [FromBody] UserForUpdateDTO dto)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var updatedUser = await _userService.Update(id, dto);
+
+			if (updatedUser is null)
+			{
+				throw new AppException("Update error!");
+			}
+
+			return Ok(updatedUser);
+		}
+
+
+		[HttpDelete]
+		[Authorize(Roles = UserRoles.Admin)]
+		[Route("{id:required}")]
+		public async Task<IActionResult> DeleteUser([FromRoute] int id)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var deletedUser = await _userService.Delete(id);
+
+			if (deletedUser is null)
+			{
+				throw new AppException("Delete error!");
+			}
+
+			return Ok(deletedUser);
 		}
 
 

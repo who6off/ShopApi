@@ -1,4 +1,4 @@
-﻿using InvoiceApp.Helpers.Exceptions;
+﻿using ShopApi.Helpers.Exceptions;
 
 namespace ShopApi.Middleware
 {

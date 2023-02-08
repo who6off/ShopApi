@@ -32,5 +32,12 @@ namespace ShopApi.Data.Repositories
 			var pagedList = new PageData<Role>(data, parameters.Page, parameters.PageSize, totalAmount);
 			return pagedList;
 		}
+
+
+		public async Task<Role?> GetByName(string name)
+		{
+			var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == name);
+			return role;
+		}
 	}
 }

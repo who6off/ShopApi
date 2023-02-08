@@ -11,6 +11,10 @@ namespace ShopApi.Data.Models
 		public string Name { get; set; }
 
 		[Required]
+		public int DisplayOrder { get; set; }
+
+
+		[Required]
 		public bool IsForAdults { get; set; }
 
 

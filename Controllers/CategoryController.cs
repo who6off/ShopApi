@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using InvoiceApp.Helpers.Exceptions;
+using ShopApi.Helpers.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
@@ -68,7 +68,7 @@ namespace ShopApi.Controllers
 
 			if (newCategory is null)
 			{
-				throw new Exception("Creation error");
+				throw new AppException("Creation error!");
 			}
 
 			var categoryDTO = _mapper.Map<CategoryDTO>(newCategory);
@@ -91,7 +91,7 @@ namespace ShopApi.Controllers
 
 			if (updatedCategory is null)
 			{
-				throw new Exception("Update error");
+				throw new AppException("Update error!");
 			}
 
 			var categoryDTO = _mapper.Map<CategoryDTO>(updatedCategory);
@@ -109,7 +109,7 @@ namespace ShopApi.Controllers
 
 			if (deletedCategory is null)
 			{
-				throw new Exception("Delete error");
+				throw new AppException("Delete error!");
 			}
 
 			var categoryDTO = _mapper.Map<CategoryDTO>(deletedCategory);
