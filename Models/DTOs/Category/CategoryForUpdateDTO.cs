@@ -9,6 +9,10 @@ namespace ShopApi.Models.DTOs.Category
 		public string? Name { get; set; }
 
 		[Required]
+		[Range(1, int.MaxValue)]
+		public int? DisplayOrder { get; set; }
+
+		[Required]
 		public bool? IsForAdults { get; set; }
 	}
 }

@@ -8,7 +8,7 @@ namespace ShopApi.Helpers.Interfaces
 		public int TotalAmount { get; }
 		public int PagesAmount { get; }
 		public int CurrentPage { get; }
-		public IEnumerable<T> Data { get; }
+		public IEnumerable<T> Data { get; set; }
 		public bool HasPrevious { get; }
 		public bool HasNext { get; }
 

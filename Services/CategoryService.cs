@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
-using ShopApi.Helpers.Exceptions;
 using ShopApi.Authorization;
 using ShopApi.Data.Models;
 using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Data.Repositories.Interfaces;
+using ShopApi.Helpers.Exceptions;
 using ShopApi.Helpers.Interfaces;
 using ShopApi.Models.DTOs.Category;
 using ShopApi.Services.Interfaces;
@@ -27,14 +27,16 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<Category?> Add(Category category)
+		public async Task<CategoryDTO?> Add(CategoryForCreationDTO dto)
 		{
+			var category = _mapper.Map<Category>(dto);
 			var newCategory = await _repository.Add(category);
-			return newCategory;
+			var newCategoryDTO = _mapper.Map<CategoryDTO>(newCategory);
+			return newCategoryDTO;
 		}
 
 
-		public async Task<Category?> Update(int id, CategoryForUpdateDTO dto)
+		public async Task<CategoryDTO?> Update(int id, CategoryForUpdateDTO dto)
 		{
 			var category = await _repository.GetById(id);
 
@@ -45,19 +47,20 @@ namespace ShopApi.Services
 
 			_mapper.Map(dto, category);
 			var updatedCategory = await _repository.Update(category);
-
-			return updatedCategory;
+			var updatedCategoryDTO = _mapper.Map<CategoryDTO>(updatedCategory);
+			return updatedCategoryDTO;
 		}
 
 
-		public async Task<Category?> Delete(int id)
+		public async Task<CategoryDTO?> Delete(int id)
 		{
 			var deletedCategory = await _repository.Delete(id);
-			return deletedCategory;
+			var deletedCategoryDTO = _mapper.Map<CategoryDTO>(deletedCategory);
+			return deletedCategoryDTO;
 		}
 
 
-		public Task<IPageData<Category>> Get(CategorySearchParameters parameters)
+		public async Task<IPageData<CategoryDTO>> Get(CategorySearchParameters parameters)
 		{
 			var user = _httpContextAccessor.HttpContext.User;
 
@@ -78,11 +81,14 @@ namespace ShopApi.Services
 				parameters.IsForAdults = false;
 			}
 
-			return _repository.Get(parameters);
+			var data = await _repository.Get(parameters);
+			var dataMap = data.Map<CategoryDTO>(_mapper);
+			dataMap.Data = dataMap.Data.OrderBy(i => i.DisplayOrder);
+			return dataMap;
 		}
 
 
-		public async Task<Category?> GetById(int id)
+		public async Task<CategoryDTO?> GetById(int id)
 		{
 			var category = await _repository.GetById(id);
 
@@ -98,7 +104,8 @@ namespace ShopApi.Services
 				throw new AccessDeniedException("Access denied");
 			}
 
-			return category;
+			var categoryDTO = _mapper.Map<CategoryDTO>(category);
+			return categoryDTO;
 		}
 	}
 }

@@ -7,6 +7,7 @@ using ShopApi.Data.Repositories.Interfaces;
 using ShopApi.Extensions;
 using ShopApi.Helpers.Exceptions;
 using ShopApi.Helpers.Interfaces;
+using ShopApi.Models.DTOs.Role;
 using ShopApi.Models.DTOs.User;
 using ShopApi.Models.Requests;
 using ShopApi.Models.User;
@@ -110,10 +111,11 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<IPageData<User>> Get(UserSearchParameters searchParameters)
+		public async Task<IPageData<UserDTO>> Get(UserSearchParameters searchParameters)
 		{
 			var result = await _userRepository.Get(searchParameters);
-			return result;
+			var mapResult = result.Map<UserDTO>(_mapper);
+			return mapResult;
 		}
 
 
@@ -184,16 +186,20 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<Role> AddRole(Role role)
+		public async Task<RoleDTO> AddRole(Role role)
 		{
 			role.Name = role.Name.FirstCharToUpper();
-			return await _roleRepository.Add(role);
+			var newRole = await _roleRepository.Add(role);
+			var roleDTO = _mapper.Map<RoleDTO>(newRole);
+			return roleDTO;
 		}
 
 
-		public async Task<IPageData<Role>> GetRoles(RoleSearchParameters searchParameters)
+		public async Task<IPageData<RoleDTO>> GetRoles(RoleSearchParameters searchParameters)
 		{
-			return await _roleRepository.Get(searchParameters);
+			var data = await _roleRepository.Get(searchParameters);
+			var dataMap = data.Map<RoleDTO>(_mapper);
+			return dataMap;
 		}
 	}
 }

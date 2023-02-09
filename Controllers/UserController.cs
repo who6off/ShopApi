@@ -1,11 +1,9 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
 using ShopApi.Authorization;
 using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Helpers.Exceptions;
-using ShopApi.Models.DTOs.Role;
 using ShopApi.Models.DTOs.User;
 using ShopApi.Models.Requests;
 using ShopApi.Services.Interfaces;
@@ -17,15 +15,12 @@ namespace ShopApi.Controllers
 	public class UserController : ControllerBase
 	{
 		private readonly IUserService _userService;
-		private readonly IMapper _mapper;
 
 		public UserController(
-			IUserService userService,
-			IMapper mapper
+			IUserService userService
 		)
 		{
 			_userService = userService;
-			_mapper = mapper;
 		}
 
 
@@ -92,8 +87,7 @@ namespace ShopApi.Controllers
 		public async Task<IActionResult> GetUsers([FromQuery] UserSearchParameters searchParameters)
 		{
 			var users = await _userService.Get(searchParameters);
-			var usersMap = users.Map<UserDTO>(_mapper);
-			return Ok(usersMap);
+			return Ok(users);
 		}
 
 
@@ -166,8 +160,7 @@ namespace ShopApi.Controllers
 		public async Task<IActionResult> GetRoles([FromQuery] RoleSearchParameters searchParameters)
 		{
 			var roles = await _userService.GetRoles(searchParameters);
-			var rolesMap = roles.Map<RoleDTO>(_mapper);
-			return Ok(rolesMap);
+			return Ok(roles);
 		}
 	}
 }

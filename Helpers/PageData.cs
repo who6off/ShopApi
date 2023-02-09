@@ -9,7 +9,7 @@ namespace ShopApi.Helpers
 		public int TotalAmount { get; private set; }
 		public int PagesAmount { get; private set; }
 		public int CurrentPage { get; private set; }
-		public IEnumerable<T> Data { get; private set; }
+		public IEnumerable<T> Data { get; set; }
 
 		public bool HasPrevious => (CurrentPage != 0) && (CurrentPage < PagesAmount);
 		public bool HasNext => (CurrentPage != (PagesAmount - 1)) && (CurrentPage < PagesAmount);

@@ -1,10 +1,8 @@
-﻿using AutoMapper;
-using ShopApi.Helpers.Exceptions;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
-using ShopApi.Data.Models;
 using ShopApi.Data.Models.SearchParameters;
+using ShopApi.Helpers.Exceptions;
 using ShopApi.Models.DTOs.Category;
 using ShopApi.Services.Interfaces;
 
@@ -15,15 +13,12 @@ namespace ShopApi.Controllers
 	public class CategoryController : ControllerBase
 	{
 		private readonly ICategoryService _categoryService;
-		private readonly IMapper _mapper;
 
 		public CategoryController(
-			ICategoryService categoryService,
-			IMapper mapper
+			ICategoryService categoryService
 			)
 		{
 			_categoryService = categoryService;
-			_mapper = mapper;
 		}
 
 
@@ -32,8 +27,8 @@ namespace ShopApi.Controllers
 		public async Task<IActionResult> Get([FromQuery] CategorySearchParameters parameters)
 		{
 			var categories = await _categoryService.Get(parameters);
-			var categoriesMap = categories.Map<CategoryDTO>(_mapper);
-			return Ok(categoriesMap);
+
+			return Ok(categories);
 		}
 
 
@@ -49,8 +44,7 @@ namespace ShopApi.Controllers
 				throw new NotFoundException("This category is not found!");
 			}
 
-			var categoryDTO = _mapper.Map<CategoryDTO>(category);
-			return Ok(categoryDTO);
+			return Ok(category);
 		}
 
 
@@ -63,17 +57,14 @@ namespace ShopApi.Controllers
 				return BadRequest(ModelState);
 			}
 
-			var category = _mapper.Map<Category>(dto);
-			var newCategory = await _categoryService.Add(category);
+			var newCategory = await _categoryService.Add(dto);
 
 			if (newCategory is null)
 			{
 				throw new AppException("Creation error!");
 			}
 
-			var categoryDTO = _mapper.Map<CategoryDTO>(newCategory);
-
-			return Ok(categoryDTO);
+			return Ok(newCategory);
 		}
 
 
@@ -94,9 +85,7 @@ namespace ShopApi.Controllers
 				throw new AppException("Update error!");
 			}
 
-			var categoryDTO = _mapper.Map<CategoryDTO>(updatedCategory);
-
-			return Ok(categoryDTO);
+			return Ok(updatedCategory);
 		}
 
 
@@ -112,9 +101,7 @@ namespace ShopApi.Controllers
 				throw new AppException("Delete error!");
 			}
 
-			var categoryDTO = _mapper.Map<CategoryDTO>(deletedCategory);
-
-			return Ok(categoryDTO);
+			return Ok(deletedCategory);
 		}
 	}
 }
