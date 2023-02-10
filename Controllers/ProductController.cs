@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
 using ShopApi.Authorization;
-using ShopApi.Data.Models;
-using ShopApi.Models.Requests;
+using ShopApi.Helpers.Exceptions;
+using ShopApi.Models.DTOs.Product;
 using ShopApi.Services.Interfaces;
 
 namespace ShopApi.Controllers
@@ -30,39 +30,30 @@ namespace ShopApi.Controllers
 		}
 
 
-		[HttpGet]
-		[Route("category/{id}")]
-		public async Task<IActionResult> GetProductsByCategory(int id)
-		{
-			var category = await _productService.GetCategoryById(id);
-			if (category is null)
-				return NotFound();
+		//[HttpGet]
+		//[Route("category/{id}")]
+		//public async Task<IActionResult> GetProductsByCategory(int id)
+		//{
+		//	var category = await _productService.GetCategoryById(id);
+		//	if (category is null)
+		//		return NotFound();
 
-			if (
-				(category.IsForAdults && !HttpContext.User.Identity.IsAuthenticated) ||
-				!HttpContext.User.IsAdult())
-				return StatusCode(StatusCodes.Status403Forbidden);
+		//	if (
+		//		(category.IsForAdults && !HttpContext.User.Identity.IsAuthenticated) ||
+		//		!HttpContext.User.IsAdult())
+		//		return StatusCode(StatusCodes.Status403Forbidden);
 
-			var result = await _productService.GetByCategory(id);
-			return Ok(result);
-		}
+		//	var result = await _productService.GetByCategory(id);
+		//	return Ok(result);
+		//}
 
 
 		[HttpPost]
 		[Consumes("multipart/form-data")]
 		[Authorize(Roles = UserRoles.Seller)]
-		public async Task<IActionResult> CreateProduct([FromForm] ProductCreationRequest request)
+		public async Task<IActionResult> CreateProduct([FromForm] ProductForCreationDTO dto)
 		{
-			var sellerId = HttpContext.User.GetUserId();
-			if (sellerId is null) return StatusCode(StatusCodes.Status403Forbidden);
-
-			var result = await _productService.Add(new Product()
-			{
-				Name = request.Name,
-				Price = request.Price,
-				CategoryId = request.CategoryId,
-				SellerId = sellerId.Value,
-			}, request.Image);
+			var result = await _productService.Add(dto);
 
 			return (result is null) ? BadRequest() : Ok(result);
 		}
@@ -71,21 +62,17 @@ namespace ShopApi.Controllers
 		[HttpPut]
 		[Consumes("multipart/form-data")]
 		[Authorize(Roles = UserRoles.Seller)]
-		public async Task<IActionResult> UpdateProduct([FromForm] ProductUpdateRequest request)
+		[Route("{id:required}")]
+		public async Task<IActionResult> UpdateProduct([FromRoute] int id, [FromForm] ProductForUpdateDTO dto)
 		{
-			if (!(await IsPermitedSeller(request.Id)))
-				return StatusCode(StatusCodes.Status403Forbidden);
+			var updetedProduct = await _productService.Update(id, dto);
 
-			var updetedProduct = await _productService.Update(new Product()
+			if (updetedProduct is null)
 			{
-				Id = request.Id,
-				Name = request.Name,
-				Price = request.Price,
-				CategoryId = request.CategoryId,
-				SellerId = HttpContext.User.GetUserId().Value
-			}, request.NewImage);
+				throw new AppException("Update error!");
+			}
 
-			return (updetedProduct is null) ? BadRequest() : Ok(updetedProduct);
+			return Ok(updetedProduct);
 		}
 
 
@@ -95,8 +82,8 @@ namespace ShopApi.Controllers
 		public async Task<IActionResult> DeleteProduct(int id)
 		{
 			var role = HttpContext.User.GetUserRole();
-			if (role == UserRoles.Seller && !(await IsPermitedSeller(id)))
-				return StatusCode(StatusCodes.Status403Forbidden);
+			//if (role == UserRoles.Seller && !(await IsPermitedSeller(id)))
+			//	return StatusCode(StatusCodes.Status403Forbidden);
 
 			var isDeleted = await _productService.Delete(id);
 
@@ -104,46 +91,46 @@ namespace ShopApi.Controllers
 		}
 
 
-		[HttpGet]
-		[Route("category")]
-		public async Task<IActionResult> GetNonAdultCategories()
-		{
-			var result = await _productService.GetCategories(false);
-			return (result is null) ? BadRequest() : Ok(result);
-		}
+		//[HttpGet]
+		//[Route("category")]
+		//public async Task<IActionResult> GetNonAdultCategories()
+		//{
+		//	var result = await _productService.GetCategories(false);
+		//	return (result is null) ? BadRequest() : Ok(result);
+		//}
 
 
-		[HttpGet]
-		[Route("category/adult")]
-		[Authorize(Policy = AgeRestrictionPolicy.Name)]
-		public async Task<IActionResult> GetAdultCategories()
-		{
-			var result = await _productService.GetCategories(true);
-			return (result is null) ? BadRequest() : Ok(result);
-		}
+		//[HttpGet]
+		//[Route("category/adult")]
+		//[Authorize(Policy = AgeRestrictionPolicy.Name)]
+		//public async Task<IActionResult> GetAdultCategories()
+		//{
+		//	var result = await _productService.GetCategories(true);
+		//	return (result is null) ? BadRequest() : Ok(result);
+		//}
 
 
-		[HttpPost]
-		[Route("category")]
-		[Authorize(Roles = UserRoles.Admin)]
-		public async Task<IActionResult> CreateCategory(CategoryCreationRequest req)
-		{
-			var result = await _productService.AddCategory(new Category()
-			{
-				Name = req.Name,
-				IsForAdults = req.IsForAdults
-			});
-			return (result is null) ? BadRequest() : Ok(result);
-		}
+		//[HttpPost]
+		//[Route("category")]
+		//[Authorize(Roles = UserRoles.Admin)]
+		//public async Task<IActionResult> CreateCategory(CategoryCreationRequest req)
+		//{
+		//	var result = await _productService.AddCategory(new Category()
+		//	{
+		//		Name = req.Name,
+		//		IsForAdults = req.IsForAdults
+		//	});
+		//	return (result is null) ? BadRequest() : Ok(result);
+		//}
 
 
-		[ApiExplorerSettings(IgnoreApi = true)]
-		private async Task<bool> IsPermitedSeller(int productId)
-		{
-			var userId = HttpContext.User.GetUserId();
-			var sellerId = (await _productService.GetSellerIdByProductId(productId)) ?? 0;
-			return userId == sellerId;
-		}
+		//[ApiExplorerSettings(IgnoreApi = true)]
+		//private async Task<bool> IsPermitedSeller(int productId)
+		//{
+		//	var userId = HttpContext.User.GetUserId();
+		//	var sellerId = (await _productService.GetSellerIdByProductId(productId)) ?? 0;
+		//	return userId == sellerId;
+		//}
 	}
 }
 

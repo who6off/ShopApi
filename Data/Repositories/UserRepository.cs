@@ -12,12 +12,19 @@ namespace ShopApi.Repositories
 	public class UserRepository : ARepository<ShopContext>, IUserRepository
 	{
 		public UserRepository(ShopContext context) : base(context) { }
-		public async Task<User> Add(User user)
+		public async Task<User?> Add(User user)
 		{
-			var result = await _context.Users.AddAsync(user);
-			await _context.SaveChangesAsync();
-			await _context.Entry(result.Entity).Reference(u => u.Role).LoadAsync();
-			return result.Entity;
+			try
+			{
+				var result = await _context.Users.AddAsync(user);
+				await _context.SaveChangesAsync();
+				await _context.Entry(result.Entity).Reference(u => u.Role).LoadAsync();
+				return result.Entity;
+			}
+			catch (Exception e)
+			{
+				return null;
+			}
 		}
 
 		public async Task<User?> FindByEmail(string email)

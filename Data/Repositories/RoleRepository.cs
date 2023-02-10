@@ -11,11 +11,18 @@ namespace ShopApi.Data.Repositories
 	{
 		public RoleRepository(ShopContext context) : base(context) { }
 
-		public async Task<Role> Add(Role role)
+		public async Task<Role?> Add(Role role)
 		{
-			var result = await _context.Roles.AddAsync(role);
-			await _context.SaveChangesAsync();
-			return result.Entity;
+			try
+			{
+				var result = await _context.Roles.AddAsync(role);
+				await _context.SaveChangesAsync();
+				return result.Entity;
+			}
+			catch (Exception e)
+			{
+				return null;
+			}
 		}
 
 		public async Task<IPageData<Role>> Get(RoleSearchParameters parameters)

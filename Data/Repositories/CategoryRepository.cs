@@ -40,43 +40,37 @@ namespace ShopApi.Data.Repositories
 
 		public async Task<Category?> Add(Category category)
 		{
-			Category? result = null;
-
 			try
 			{
 				var enityEntry = await _context.Categories.AddAsync(category);
 				await _context.SaveChangesAsync();
-				result = enityEntry.Entity;
+				return enityEntry.Entity;
 			}
 			catch (Exception e)
 			{
 				return null;
 			}
-
-			return result;
 		}
+
 
 		public async Task<Category?> Update(Category category)
 		{
-			Category? result = null;
-
-			try
+			return await Task.Run(() =>
 			{
-				await Task.Run(() =>
+				try
 				{
 					_context.ChangeTracker.Clear();
 					var entityEntry = _context.Categories.Update(category);
 					_context.SaveChanges();
-					result = entityEntry.Entity;
-				});
-			}
-			catch (Exception e)
-			{
-				return null;
-			}
-
-			return result;
+					return entityEntry.Entity;
+				}
+				catch (Exception e)
+				{
+					return null;
+				}
+			});
 		}
+
 
 		public async Task<Category?> Delete(int id)
 		{

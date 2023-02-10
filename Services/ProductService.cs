@@ -1,7 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using ShopApi.Authorization;
 using ShopApi.Data.Models;
 using ShopApi.Data.Repositories.Interfaces;
 using ShopApi.Extensions;
+using ShopApi.Helpers.Exceptions;
+using ShopApi.Models.DTOs.Product;
 using ShopApi.Services.Interfaces;
 
 namespace ShopApi.Services
@@ -11,16 +15,22 @@ namespace ShopApi.Services
 		private readonly ICategoryRepository _categoryRepository;
 		private readonly IProductRepository _productRepository;
 		private readonly IFileService _fileService;
+		private readonly HttpContext? _httpContext;
+		private readonly IMapper _mapper;
 
 		public ProductService(
 			ICategoryRepository categoryRepository,
 			IProductRepository productRepository,
-			IFileService fileService
+			IFileService fileService,
+			IHttpContextAccessor httpContextAccessor,
+			IMapper mapper
 			)
 		{
 			_categoryRepository = categoryRepository;
 			_productRepository = productRepository;
 			_fileService = fileService;
+			_httpContext = httpContextAccessor.HttpContext;
+			_mapper = mapper;
 		}
 
 		public async Task<Product[]> GetAll()
@@ -57,35 +67,64 @@ namespace ShopApi.Services
 			return product;
 		}
 
-		public async Task<Product> Add(Product product, IFormFile? image = null)
+		public async Task<ProductDTO?> Add(ProductForCreationDTO dto)
 		{
-			var newImage = (image is null) ? null : await _fileService.SaveImage(image);
-			product.Image = newImage;
+			var product = _mapper.Map<Product>(dto);
 			product.Name = product.Name.FirstCharToUpper();
+			product.SellerId = _httpContext.User.GetUserId().Value;
+
+			var newImage = (dto.Image is null) ? null : await _fileService.SaveImage(dto.Image);
+			product.Image = newImage;
+
 			var newProduct = await _productRepository.Add(product);
 
-			return newProduct;
+			if (newProduct is null)
+			{
+				throw new AppException("Creation error!");
+			}
+
+			var productDTO = _mapper.Map<ProductDTO>(newProduct);
+			return productDTO;
 		}
 
-		public async Task<Product?> Update(Product product, IFormFile? image = null)
+		public async Task<ProductDTO?> Update(int id, ProductForUpdateDTO dto)
 		{
-			var oldImage = await _productRepository.GetImageById(product.Id);
-			var newImage = (image is null) ? null : await _fileService.SaveImage(image);
+			var product = await _productRepository.GetById(id);
 
+			if (product is null)
+			{
+				throw new NotFoundException("This product is not found!");
+			}
+
+			var oldImage = product.Image;
+
+			_mapper.Map(dto, product);
+
+			var newImage = (dto.Image is null) ? null : await _fileService.SaveImage(dto.Image);
 			product.Image = (newImage is null) ? oldImage : newImage;
 
 			product.Name = product.Name.FirstCharToUpper();
+			product.SellerId = _httpContext.User.GetUserId().Value;
 
 			var updatedProduct = await _productRepository.Update(product);
 
-			if (
-				((newImage is not null) && (updatedProduct is not null)) ||
-				(updatedProduct is null))
+			if ((newImage is not null) && (updatedProduct is not null))
 			{
 				_fileService.DeleteImage(oldImage);
 			}
 
-			return updatedProduct;
+			if (updatedProduct is null)
+			{
+				if (newImage is not null)
+				{
+					_fileService.DeleteImage(newImage);
+				}
+
+				throw new AppException("Update error!");
+			}
+
+			var updatedProductDTO = _mapper.Map<ProductDTO>(updatedProduct);
+			return updatedProductDTO;
 		}
 
 		public async Task<bool> Delete(int id)

@@ -1,11 +1,14 @@
 ﻿using ShopApi.Data.Models;
+using ShopApi.Models.DTOs.Product;
 
 namespace ShopApi.Services.Interfaces
 {
     public interface IProductService
     {
-        public Task<Product> Add(Product product, IFormFile? image = null);
-        public Task<Product?> Update(Product product, IFormFile? image = null);
+        public Task<ProductDTO?> Add(ProductForCreationDTO dto);
+
+        public Task<ProductDTO?> Update(int id, ProductForUpdateDTO dto);
+
         public Task<bool> Delete(int id);
 
         public Task<int?> GetSellerIdByProductId(int id);

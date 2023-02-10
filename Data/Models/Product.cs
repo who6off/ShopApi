@@ -30,5 +30,10 @@ namespace ShopApi.Data.Models
 		public string? Image { get; set; }
 
 		public virtual ICollection<OrderItem> OrderItems { get; set; }
+
+
+		public string? GetCategoryName() => Category?.Name;
+
+		public bool? GetIsForAdults() => Category?.IsForAdults;
 	}
 }

@@ -27,11 +27,19 @@ namespace ShopApi.Data.Repositories
 			return result;
 		}
 
-		public async Task<Product> Add(Product product)
+		public async Task<Product?> Add(Product product)
 		{
-			var newProduct = await _context.Products.AddAsync(product);
-			await _context.SaveChangesAsync();
-			return newProduct.Entity;
+			try
+			{
+				var entityEntry = await _context.Products.AddAsync(product);
+				await _context.SaveChangesAsync();
+				await _context.Entry(entityEntry.Entity).Reference(i => i.Category).LoadAsync();
+				return entityEntry.Entity;
+			}
+			catch (Exception e)
+			{
+				return null;
+			}
 		}
 
 		public async Task<Product?> Delete(int id)
@@ -63,9 +71,10 @@ namespace ShopApi.Data.Repositories
 				try
 				{
 					_context.ChangeTracker.Clear(); //Update fix
-					var result = _context.Products.Update(product);
+					var entityEntry = _context.Products.Update(product);
 					_context.SaveChanges();
-					return result.Entity;
+					_context.Entry(entityEntry.Entity).Reference(i => i.Category).Load();
+					return entityEntry.Entity;
 				}
 				catch (Exception e)
 				{
