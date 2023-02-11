@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using ShopApi.Authentication;
 using ShopApi.Authorization;
 using ShopApi.Data.Models;
+using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Data.Repositories.Interfaces;
 using ShopApi.Extensions;
 using ShopApi.Helpers.Exceptions;
+using ShopApi.Helpers.Interfaces;
 using ShopApi.Models.DTOs.Product;
 using ShopApi.Services.Interfaces;
 
@@ -14,64 +17,53 @@ namespace ShopApi.Services
 	{
 		private readonly ICategoryRepository _categoryRepository;
 		private readonly IProductRepository _productRepository;
+		private readonly IUserRepository _userRepository;
 		private readonly IFileService _fileService;
+		private readonly IAuthorizationService _authorizationService;
 		private readonly HttpContext? _httpContext;
 		private readonly IMapper _mapper;
+
 
 		public ProductService(
 			ICategoryRepository categoryRepository,
 			IProductRepository productRepository,
+			IUserRepository userRepository,
 			IFileService fileService,
 			IHttpContextAccessor httpContextAccessor,
-			IMapper mapper
+			IMapper mapper,
+			IAuthorizationService authorizationService
 			)
 		{
 			_categoryRepository = categoryRepository;
 			_productRepository = productRepository;
+			_userRepository = userRepository;
 			_fileService = fileService;
+			_authorizationService = authorizationService;
 			_httpContext = httpContextAccessor.HttpContext;
 			_mapper = mapper;
 		}
 
-		public async Task<Product[]> GetAll()
+		public async Task<IPageData<ProductDTO>> Get(ProductSearchParameters searchParameters)
 		{
-			var products = await _productRepository.GetAll()
-				.Where(i => !i.Category.IsForAdults)
-				.OrderByDescending(i => i.Id)
-				.ToArrayAsync();
-
-			return products;
+			var result = await _productRepository.Get(searchParameters);
+			var mapResult = result.Map<ProductDTO>(_mapper);
+			return mapResult;
 		}
 
 
-		public async Task<Product[]> GetByCategory(int categoryId)
-		{
-			var products = await _productRepository.GetAll()
-			   .Where(i => i.CategoryId == categoryId)
-			   .OrderByDescending(i => i.Id)
-			   .ToArrayAsync();
-
-			return products;
-		}
-
-
-		public async Task<int?> GetSellerIdByProductId(int id)
+		public async Task<ProductDTO?> GetById(int id)
 		{
 			var product = await _productRepository.GetById(id);
-			return (product is null) ? null : product.SellerId;
-		}
+			await Authorize(product, ProductOperations.Get);
 
-		public async Task<Product?> GetById(int id)
-		{
-			var product = await _productRepository.GetById(id);
-			return product;
+			var productDTO = _mapper.Map<ProductDTO>(product);
+			return productDTO;
 		}
 
 		public async Task<ProductDTO?> Add(ProductForCreationDTO dto)
 		{
 			var product = _mapper.Map<Product>(dto);
-			product.Name = product.Name.FirstCharToUpper();
-			product.SellerId = _httpContext.User.GetUserId().Value;
+			await MapProductOperationDTO(product, dto);
 
 			var newImage = (dto.Image is null) ? null : await _fileService.SaveImage(dto.Image);
 			product.Image = newImage;
@@ -90,21 +82,20 @@ namespace ShopApi.Services
 		public async Task<ProductDTO?> Update(int id, ProductForUpdateDTO dto)
 		{
 			var product = await _productRepository.GetById(id);
+			await Authorize(product, ProductOperations.Update);
 
-			if (product is null)
+			if (!isAuthorized.Succeeded)
 			{
-				throw new NotFoundException("This product is not found!");
+				throw new AccessDeniedException("Access denied!");
 			}
 
 			var oldImage = product.Image;
 
 			_mapper.Map(dto, product);
+			await MapProductOperationDTO(product, dto);
 
 			var newImage = (dto.Image is null) ? null : await _fileService.SaveImage(dto.Image);
 			product.Image = (newImage is null) ? oldImage : newImage;
-
-			product.Name = product.Name.FirstCharToUpper();
-			product.SellerId = _httpContext.User.GetUserId().Value;
 
 			var updatedProduct = await _productRepository.Update(product);
 
@@ -115,10 +106,7 @@ namespace ShopApi.Services
 
 			if (updatedProduct is null)
 			{
-				if (newImage is not null)
-				{
-					_fileService.DeleteImage(newImage);
-				}
+				_fileService.DeleteImage(newImage);
 
 				throw new AppException("Update error!");
 			}
@@ -127,22 +115,93 @@ namespace ShopApi.Services
 			return updatedProductDTO;
 		}
 
-		public async Task<bool> Delete(int id)
+		public async Task<ProductDTO?> Delete(int id)
 		{
+			var product = await _productRepository.GetById(id);
+			await Authorize(product, ProductOperations.Delete);
+
 			var deletedProduct = await _productRepository.Delete(id);
 
 			if (deletedProduct is null)
-				return false;
+			{
+				throw new AppException("Delete error!");
+			}
+			else
+			{
+				_fileService.DeleteImage(deletedProduct.Image);
+			}
 
-			_fileService.DeleteImage(deletedProduct.Image);
-			return true;
+			var deletedProductDTO = _mapper.Map<ProductDTO>(deletedProduct);
+			return deletedProductDTO;
 		}
+
+
+		private async Task MapProductOperationDTO(Product product, ProductOperationDTO dto)
+		{
+			var userRole = _httpContext.User.GetUserRole();
+
+			if (userRole == UserRoles.Admin)
+			{
+				if (dto.SellerId is null)
+				{
+					throw new AppException("SellerId is required!");
+				}
+
+
+				var sellerRole = await _userRepository.GetUserRoleNameById(dto.SellerId.Value);
+				if ((sellerRole is null) || (sellerRole != UserRoles.Seller))
+				{
+					throw new AppException("Incorrect SellerId!");
+				}
+
+				product.SellerId = dto.SellerId.Value;
+			}
+
+			if (userRole == UserRoles.Seller)
+			{
+				var userId = _httpContext.User.GetUserId();
+
+				if ((userId != dto.SellerId))
+				{
+					throw new AccessDeniedException("SellerId can't be changed");
+				}
+
+				product.SellerId = userId.Value;
+			}
+
+			product.Name = dto.Name.FirstCharToUpper();
+		}
+
+
+		private async Task Authorize(Product? product, IAuthorizationRequirement requirement)
+		{
+			if (product is null)
+			{
+				throw new NotFoundException("Product is not found!");
+			}
+
+			var isAuthorized = await _authorizationService.AuthorizeAsync(
+				_httpContext.User, product, requirement);
+
+			if (!isAuthorized.Succeeded)
+			{
+				throw new AccessDeniedException("Access denied!");
+			}
+		}
+
+
 
 
 		public async Task<Category?> GetCategoryById(int id)
 		{
 			var result = await _categoryRepository.GetById(id);
 			return result;
+		}
+
+		public async Task<int?> GetSellerIdByProductId(int id)
+		{
+			var product = await _productRepository.GetById(id);
+			return (product is null) ? null : product.SellerId;
 		}
 
 
@@ -153,7 +212,6 @@ namespace ShopApi.Services
 			return result;
 		}
 
-
 		public async Task<Category[]> GetCategories(bool isAdults)
 		{
 			throw new NotImplementedException();
@@ -162,6 +220,5 @@ namespace ShopApi.Services
 			//	.ToArrayAsync();
 			//return result;
 		}
-
 	}
 }

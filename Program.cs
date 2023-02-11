@@ -28,6 +28,7 @@ namespace ShopApi
 			var builder = WebApplication.CreateBuilder();
 			var (services, configuration) = (builder.Services, builder.Configuration);
 
+
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 				 .AddJwtBearer(options =>
 				 {
@@ -52,7 +53,10 @@ namespace ShopApi
 					p => p.AddRequirements(new AgeRestrictionPolicy(configuration.GetAdultAge())));
 			});
 
+
 			services.AddCors();
+
+
 			services.AddSwaggerGen(options =>
 			{
 				options.SwaggerDoc("v1", new OpenApiInfo { Title = "ShopAPI", Version = "v1" });
@@ -81,10 +85,14 @@ namespace ShopApi
 					new string[] {}
 				}});
 			});
+
+
 			services.AddControllers();
+
 
 			services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 			services.Configure<ShopDbSettings>(configuration.GetSection(ShopDbSettings.SectionName));
+
 
 			services.AddDbContext<ShopContext>(options =>
 			 {
@@ -92,11 +100,14 @@ namespace ShopApi
 					 configuration.GetConnectionString(builder.Environment.EnvironmentName));
 			 });
 
+
 			builder.Services.AddAutoMapper(typeof(Program));
+
 
 			services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 
 			services.AddSingleton<IAuthorizationHandler, AgeRestrictionPolicyHandler>();
+			services.AddTransient<IAuthorizationHandler, ProductAccessRestrictions>();
 
 			services.AddSingleton<IPasswordHasher, PasswordHasher>();
 			services.AddSingleton<ITokenGenerator, TokenGenerator>();

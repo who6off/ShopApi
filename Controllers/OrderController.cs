@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
 using ShopApi.Authorization;
-using ShopApi.Data.Models;
 using ShopApi.Models.Requests;
 using ShopApi.Services.Interfaces;
 
@@ -78,36 +77,36 @@ namespace ShopApi.Controllers
 		}
 
 
-		[HttpPost]
-		[Authorize]
-		public async Task<IActionResult> CreateNewOrder(OrderCreationRequest? request = null)
-		{
-			if (request is not null)
-				request.Items = await GetPermitedRequestItems(request.Items);
+		//[HttpPost]
+		//[Authorize]
+		//public async Task<IActionResult> CreateNewOrder(OrderCreationRequest? request = null)
+		//{
+		//	if (request is not null)
+		//		request.Items = await GetPermitedRequestItems(request.Items);
 
-			var newOrder = await _orderService.Add(new Order()
-			{
-				BuyerId = HttpContext.User.GetUserId().Value,
-				Date = DateTime.Now,
-			}, request);
+		//	var newOrder = await _orderService.Add(new Order()
+		//	{
+		//		BuyerId = HttpContext.User.GetUserId().Value,
+		//		Date = DateTime.Now,
+		//	}, request);
 
-			return (newOrder is null) ? BadRequest() : Ok(newOrder);
-		}
+		//	return (newOrder is null) ? BadRequest() : Ok(newOrder);
+		//}
 
 
-		[HttpPut]
-		[Authorize]
-		public async Task<IActionResult> UpdateOrder(OrderUpdateRequest request)
-		{
-			if (!(await IsPermitedOrder(request.OrderId)))
-				return StatusCode(StatusCodes.Status403Forbidden);
+		//[HttpPut]
+		//[Authorize]
+		//public async Task<IActionResult> UpdateOrder(OrderUpdateRequest request)
+		//{
+		//	if (!(await IsPermitedOrder(request.OrderId)))
+		//		return StatusCode(StatusCodes.Status403Forbidden);
 
-			request.Items = await GetPermitedRequestItems(request.Items);
+		//	request.Items = await GetPermitedRequestItems(request.Items);
 
-			var updatedOrder = await _orderService.Update(request);
+		//	var updatedOrder = await _orderService.Update(request);
 
-			return (updatedOrder is null) ? BadRequest() : Ok(updatedOrder);
-		}
+		//	return (updatedOrder is null) ? BadRequest() : Ok(updatedOrder);
+		//}
 
 
 		[HttpPut]
@@ -138,35 +137,35 @@ namespace ShopApi.Controllers
 		}
 
 
-		[HttpPost]
-		[Route("item")]
-		[Authorize]
-		public async Task<IActionResult> AddProductToOrder(
-			OrderProductRequest request,
-			[FromServices] IConfiguration configuration
-			)
-		{
-			var buyerId = HttpContext.User.GetUserId();
-			var product = await _productService.GetById(request.ProductId);
+		//[HttpPost]
+		//[Route("item")]
+		//[Authorize]
+		//public async Task<IActionResult> AddProductToOrder(
+		//	OrderProductRequest request,
+		//	[FromServices] IConfiguration configuration
+		//	)
+		//{
+		//	var buyerId = HttpContext.User.GetUserId();
+		//	var product = await _productService.GetById(request.ProductId);
 
-			if (product is null)
-				return StatusCode(StatusCodes.Status404NotFound);
+		//	if (product is null)
+		//		return StatusCode(StatusCodes.Status404NotFound);
 
-			if (product.Category.IsForAdults && !HttpContext.User.IsAdult())
-				return StatusCode(StatusCodes.Status403Forbidden);
+		//	if (product.Category.IsForAdults && !HttpContext.User.IsAdult())
+		//		return StatusCode(StatusCodes.Status403Forbidden);
 
-			if (request.OrderId is not null)
-			{
-				if (!(await IsPermitedOrder(request.OrderId.Value)))
-				{
-					return StatusCode(StatusCodes.Status403Forbidden);
-				}
-			}
+		//	if (request.OrderId is not null)
+		//	{
+		//		if (!(await IsPermitedOrder(request.OrderId.Value)))
+		//		{
+		//			return StatusCode(StatusCodes.Status403Forbidden);
+		//		}
+		//	}
 
-			var orderItem = await _orderService.AddProductToOrder(request, buyerId.Value);
+		//	var orderItem = await _orderService.AddProductToOrder(request, buyerId.Value);
 
-			return (orderItem is null) ? BadRequest() : Ok(orderItem);
-		}
+		//	return (orderItem is null) ? BadRequest() : Ok(orderItem);
+		//}
 
 		[HttpPut]
 		[Route("item")]
@@ -222,23 +221,23 @@ namespace ShopApi.Controllers
 		}
 
 
-		[ApiExplorerSettings(IgnoreApi = true)]
-		private async Task<OrderRequestItem[]> GetPermitedRequestItems(OrderRequestItem[] items)
-		{
-			Predicate<Product?> Predicate = (HttpContext.User.IsAdult())
-				? (Product? product) => product is not null
-				: (Product? product) => product is not null && !product.Category.IsForAdults;
+		//[ApiExplorerSettings(IgnoreApi = true)]
+		//private async Task<OrderRequestItem[]> GetPermitedRequestItems(OrderRequestItem[] items)
+		//{
+		//	Predicate<Product?> Predicate = (HttpContext.User.IsAdult())
+		//		? (Product? product) => product is not null
+		//		: (Product? product) => product is not null && !product.Category.IsForAdults;
 
-			return await Task.Run(() =>
-			{
-				return items
-				.Where((i) =>
-				{
-					var product = _productService.GetById(i.ProductId).Result;
-					return Predicate(product);
-				})
-				.ToArray();
-			});
-		}
+		//	return await Task.Run(() =>
+		//	{
+		//		return items
+		//		.Where((i) =>
+		//		{
+		//			var product = _productService.GetById(i.ProductId).Result;
+		//			return Predicate(product);
+		//		})
+		//		.ToArray();
+		//	});
+		//}
 	}
 }

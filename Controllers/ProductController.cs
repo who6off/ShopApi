@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
-using ShopApi.Authorization;
+using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Helpers.Exceptions;
 using ShopApi.Models.DTOs.Product;
 using ShopApi.Services.Interfaces;
@@ -22,46 +22,44 @@ namespace ShopApi.Controllers
 
 
 		[HttpGet]
-		public async Task<IActionResult> GetAllProducts()
+		[AllowAnonymous]
+		public async Task<IActionResult> GetProducts([FromQuery] ProductSearchParameters searchParameters)
 		{
-
-			var result = await _productService.GetAll();
-			return Ok(result);
+			var products = await _productService.Get(searchParameters);
+			return Ok(products);
 		}
 
 
-		//[HttpGet]
-		//[Route("category/{id}")]
-		//public async Task<IActionResult> GetProductsByCategory(int id)
-		//{
-		//	var category = await _productService.GetCategoryById(id);
-		//	if (category is null)
-		//		return NotFound();
+		[HttpGet]
+		[AllowAnonymous]
+		[Route("{id:required}")]
+		public async Task<IActionResult> GetProductById([FromRoute] int id)
+		{
+			var product = await _productService.GetById(id);
+			return Ok(product);
+		}
 
-		//	if (
-		//		(category.IsForAdults && !HttpContext.User.Identity.IsAuthenticated) ||
-		//		!HttpContext.User.IsAdult())
-		//		return StatusCode(StatusCodes.Status403Forbidden);
-
-		//	var result = await _productService.GetByCategory(id);
-		//	return Ok(result);
-		//}
 
 
 		[HttpPost]
 		[Consumes("multipart/form-data")]
-		[Authorize(Roles = UserRoles.Seller)]
-		public async Task<IActionResult> CreateProduct([FromForm] ProductForCreationDTO dto)
+		[Authorize(Roles = $"{UserRoles.Seller}, {UserRoles.Admin}")]
+		public async Task<IActionResult> AddProduct([FromForm] ProductForCreationDTO dto)
 		{
-			var result = await _productService.Add(dto);
+			var product = await _productService.Add(dto);
 
-			return (result is null) ? BadRequest() : Ok(result);
+			if (product is null)
+			{
+				throw new AppException("Creation error!");
+			}
+
+			return Ok(product);
 		}
 
 
 		[HttpPut]
 		[Consumes("multipart/form-data")]
-		[Authorize(Roles = UserRoles.Seller)]
+		[Authorize(Roles = $"{UserRoles.Seller}, {UserRoles.Admin}")]
 		[Route("{id:required}")]
 		public async Task<IActionResult> UpdateProduct([FromRoute] int id, [FromForm] ProductForUpdateDTO dto)
 		{
@@ -77,17 +75,18 @@ namespace ShopApi.Controllers
 
 
 		[HttpDelete]
-		[Route("{id}")]
 		[Authorize(Roles = $"{UserRoles.Seller}, {UserRoles.Admin}")]
-		public async Task<IActionResult> DeleteProduct(int id)
+		[Route("{id:required}")]
+		public async Task<IActionResult> DeleteProduct([FromRoute] int id)
 		{
-			var role = HttpContext.User.GetUserRole();
-			//if (role == UserRoles.Seller && !(await IsPermitedSeller(id)))
-			//	return StatusCode(StatusCodes.Status403Forbidden);
+			var deletedProduct = await _productService.Delete(id);
 
-			var isDeleted = await _productService.Delete(id);
+			if (deletedProduct is null)
+			{
+				throw new AppException("Delete error!");
+			}
 
-			return isDeleted ? Ok() : BadRequest();
+			return Ok(deletedProduct);
 		}
 
 

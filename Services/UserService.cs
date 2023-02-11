@@ -75,11 +75,11 @@ namespace ShopApi.Services
 
 		public async Task<UserLoginResult?> Login(LoginRequest request)
 		{
-			var user = await _userRepository.FindByEmail(request.Email);
+			var user = await _userRepository.GetByEmail(request.Email);
 
 			if (user is null)
 			{
-				throw new AppException("User not found!");
+				throw new NotFoundException("User not found!");
 			}
 
 			if (!_passwordHasher.Verify(request.Password, user.PasswordHash))

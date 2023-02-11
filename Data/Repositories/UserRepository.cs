@@ -27,7 +27,7 @@ namespace ShopApi.Repositories
 			}
 		}
 
-		public async Task<User?> FindByEmail(string email)
+		public async Task<User?> GetByEmail(string email)
 		{
 			var result = await _context
 				.Users
@@ -57,7 +57,7 @@ namespace ShopApi.Repositories
 
 			var data = await query
 				.Skip(searchParameters.GetSkip())
-				.Take((int)searchParameters.PageSize)
+				.Take(searchParameters.PageSize)
 				.ToArrayAsync();
 
 			var pageData = new PageData<User>(data, searchParameters.Page, searchParameters.PageSize, totalAmount);
@@ -102,6 +102,19 @@ namespace ShopApi.Repositories
 					return null;
 				}
 			});
+		}
+
+
+		public async Task<string?> GetUserRoleNameById(int id)
+		{
+			var result = await _context
+				.Users
+				.Include(i => i.Role)
+				.Where(i => i.Id == id)
+				.Select(i => i.Role.Name)
+				.FirstOrDefaultAsync();
+
+			return result;
 		}
 	}
 }

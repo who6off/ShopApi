@@ -8,7 +8,7 @@ namespace ShopApi.Data.Repositories.Interfaces
 	{
 		public Task<User?> GetById(int id);
 
-		public Task<User?> FindByEmail(string email);
+		public Task<User?> GetByEmail(string email);
 
 		public Task<IPageData<User>> Get(UserSearchParameters searchParameters);
 
@@ -17,5 +17,8 @@ namespace ShopApi.Data.Repositories.Interfaces
 		public Task<User?> Update(User user);
 
 		public Task<User?> Delete(int id);
+
+
+		public Task<string?> GetUserRoleNameById(int id);
 	}
 }

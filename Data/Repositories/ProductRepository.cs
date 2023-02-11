@@ -1,6 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShopApi.Data.Models;
+using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Data.Repositories.Interfaces;
+using ShopApi.Helpers;
+using ShopApi.Helpers.Interfaces;
 
 namespace ShopApi.Data.Repositories
 {
@@ -8,22 +11,30 @@ namespace ShopApi.Data.Repositories
 	{
 		public ProductRepository(ShopContext context) : base(context) { }
 
+
+		public async Task<IPageData<Product>> Get(ProductSearchParameters searchParameters)
+		{
+			var query = _context.Products
+				.Include(i => i.Category)
+				.AsQueryable();
+
+			var totalAmount = await query.CountAsync();
+			var data = await query
+				.Skip(searchParameters.GetSkip())
+				.Take(searchParameters.PageSize)
+				.ToArrayAsync();
+
+			var pageData = new PageData<Product>(data, searchParameters.Page, searchParameters.PageSize, totalAmount);
+			return pageData;
+		}
+
+
 		public async Task<Product?> GetById(int id)
 		{
 			var result = await _context
 				.Products
 				.Include(i => i.Category)
 				.FirstOrDefaultAsync(i => i.Id == id);
-			return result;
-		}
-
-		public async Task<string?> GetImageById(int id)
-		{
-			var result = await _context
-				.Products
-				.Where(i => i.Id == id)
-				.Select(i => i.Image)
-				.FirstOrDefaultAsync();
 			return result;
 		}
 
@@ -82,19 +93,6 @@ namespace ShopApi.Data.Repositories
 					return null;
 				}
 			});
-		}
-
-		public async Task<Product[]> GetByCategory(int categoryId)
-		{
-			var products = await GetAll()
-				.Where(i => i.CategoryId == categoryId)
-				.ToArrayAsync();
-
-			return products;
-		}
-		public IQueryable<Product> GetAll()
-		{
-			return _context.Products.Include(i => i.Category).Select(i => i);
 		}
 	}
 }

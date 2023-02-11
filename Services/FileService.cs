@@ -28,7 +28,7 @@ namespace ShopApi.Services
 
 			return await Task.Run(() =>
 			{
-				var path = _imageFolderPath + fileName;
+				var path = Path.Combine(_imageFolderPath, fileName);
 				File.Delete(path);
 				return !File.Exists(path);
 			});
