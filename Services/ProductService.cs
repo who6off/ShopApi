@@ -43,8 +43,34 @@ namespace ShopApi.Services
 			_mapper = mapper;
 		}
 
+
 		public async Task<IPageData<ProductDTO>> Get(ProductSearchParameters searchParameters)
 		{
+			var user = _httpContext.User;
+
+			if (!user.Identity.IsAuthenticated || !user.IsAdult())
+			{
+				if (searchParameters.Categories is not null)
+				{
+					foreach (var categoryId in searchParameters.Categories)
+					{
+						var category = await _categoryRepository.GetById(categoryId);
+
+						if (category.IsForAdults)
+						{
+							throw new AccessDeniedException("Access denied!");
+						}
+					}
+				}
+
+				if ((searchParameters.IsForAdults is not null) && searchParameters.IsForAdults.Value)
+				{
+					throw new AccessDeniedException("Access denied!");
+				}
+
+				searchParameters.IsForAdults = false;
+			}
+
 			var result = await _productRepository.Get(searchParameters);
 			var mapResult = result.Map<ProductDTO>(_mapper);
 			return mapResult;
@@ -59,6 +85,7 @@ namespace ShopApi.Services
 			var productDTO = _mapper.Map<ProductDTO>(product);
 			return productDTO;
 		}
+
 
 		public async Task<ProductDTO?> Add(ProductForCreationDTO dto)
 		{
@@ -79,15 +106,11 @@ namespace ShopApi.Services
 			return productDTO;
 		}
 
+
 		public async Task<ProductDTO?> Update(int id, ProductForUpdateDTO dto)
 		{
 			var product = await _productRepository.GetById(id);
 			await Authorize(product, ProductOperations.Update);
-
-			if (!isAuthorized.Succeeded)
-			{
-				throw new AccessDeniedException("Access denied!");
-			}
 
 			var oldImage = product.Image;
 
@@ -114,6 +137,7 @@ namespace ShopApi.Services
 			var updatedProductDTO = _mapper.Map<ProductDTO>(updatedProduct);
 			return updatedProductDTO;
 		}
+
 
 		public async Task<ProductDTO?> Delete(int id)
 		{
@@ -161,7 +185,7 @@ namespace ShopApi.Services
 			{
 				var userId = _httpContext.User.GetUserId();
 
-				if ((userId != dto.SellerId))
+				if ((dto.SellerId is not null) && (userId != dto.SellerId))
 				{
 					throw new AccessDeniedException("SellerId can't be changed");
 				}

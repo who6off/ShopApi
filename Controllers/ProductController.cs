@@ -88,48 +88,6 @@ namespace ShopApi.Controllers
 
 			return Ok(deletedProduct);
 		}
-
-
-		//[HttpGet]
-		//[Route("category")]
-		//public async Task<IActionResult> GetNonAdultCategories()
-		//{
-		//	var result = await _productService.GetCategories(false);
-		//	return (result is null) ? BadRequest() : Ok(result);
-		//}
-
-
-		//[HttpGet]
-		//[Route("category/adult")]
-		//[Authorize(Policy = AgeRestrictionPolicy.Name)]
-		//public async Task<IActionResult> GetAdultCategories()
-		//{
-		//	var result = await _productService.GetCategories(true);
-		//	return (result is null) ? BadRequest() : Ok(result);
-		//}
-
-
-		//[HttpPost]
-		//[Route("category")]
-		//[Authorize(Roles = UserRoles.Admin)]
-		//public async Task<IActionResult> CreateCategory(CategoryCreationRequest req)
-		//{
-		//	var result = await _productService.AddCategory(new Category()
-		//	{
-		//		Name = req.Name,
-		//		IsForAdults = req.IsForAdults
-		//	});
-		//	return (result is null) ? BadRequest() : Ok(result);
-		//}
-
-
-		//[ApiExplorerSettings(IgnoreApi = true)]
-		//private async Task<bool> IsPermitedSeller(int productId)
-		//{
-		//	var userId = HttpContext.User.GetUserId();
-		//	var sellerId = (await _productService.GetSellerIdByProductId(productId)) ?? 0;
-		//	return userId == sellerId;
-		//}
 	}
 }
 

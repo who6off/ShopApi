@@ -18,6 +18,30 @@ namespace ShopApi.Data.Repositories
 				.Include(i => i.Category)
 				.AsQueryable();
 
+			if (searchParameters.Name is not null)
+			{
+				query = query.Where(i => EF.Functions.Like(i.Name, $"{searchParameters.Name}%"));
+			}
+
+			if (searchParameters.IsForAdults is not null)
+			{
+				query = query
+					.Where(i => i.Category != null)
+					.Where(i => i.Category!.IsForAdults == searchParameters.IsForAdults);
+			}
+
+			if (searchParameters.Categories is not null)
+			{
+				query = query
+					.Where(i => i.CategoryId != null)
+					.Where(i => searchParameters.Categories.Contains(i.CategoryId.Value));
+			}
+
+			if (searchParameters.Sellers is not null)
+			{
+				query = query.Where(i => searchParameters.Sellers.Contains(i.SellerId));
+			}
+
 			var totalAmount = await query.CountAsync();
 			var data = await query
 				.Skip(searchParameters.GetSkip())
