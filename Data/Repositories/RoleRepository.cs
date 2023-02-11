@@ -25,18 +25,18 @@ namespace ShopApi.Data.Repositories
 			}
 		}
 
-		public async Task<IPageData<Role>> Get(RoleSearchParameters parameters)
+		public async Task<IPageData<Role>> Get(RoleSearchParameters searchParameters)
 		{
 			var query = _context.Roles.AsQueryable();
 
 			var totalAmount = await query.CountAsync();
 
 			var data = await query
-				.Skip(parameters.GetSkip())
-				.Take(parameters.PageSize)
+				.Skip(searchParameters.GetSkip())
+				.Take(searchParameters.PageSize)
 			.ToArrayAsync();
 
-			var pagedList = new PageData<Role>(data, parameters.Page, parameters.PageSize, totalAmount);
+			var pagedList = new PageData<Role>(data, searchParameters.Page, searchParameters.PageSize, totalAmount);
 			return pagedList;
 		}
 

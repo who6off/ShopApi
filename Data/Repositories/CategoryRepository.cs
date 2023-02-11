@@ -11,22 +11,27 @@ namespace ShopApi.Data.Repositories
 	{
 		public CategoryRepository(ShopContext context) : base(context) { }
 
-		public async Task<IPageData<Category>> Get(CategorySearchParameters parameters)
+		public async Task<IPageData<Category>> Get(CategorySearchParameters searchParameters)
 		{
-			var query = _context.Categories.AsQueryable();
+			var query = _context.Categories.OrderBy(i => i.DisplayOrder).AsQueryable();
 
-			if (parameters.IsForAdults is not null)
+			if (searchParameters.IsForAdults is not null)
 			{
-				query = query.Where(i => i.IsForAdults == parameters.IsForAdults);
+				query = query.Where(i => EF.Functions.Like(i.Name, $"{searchParameters.Name}%");
 			}
 
-			var amount = await query.CountAsync();
+			if (searchParameters.IsForAdults is not null)
+			{
+				query = query.Where(i => i.IsForAdults == searchParameters.IsForAdults);
+			}
+
+			var totalAmount = await query.CountAsync();
 			var data = await query
-				.Skip(parameters.GetSkip())
-				.Take(parameters.PageSize)
+				.Skip(searchParameters.GetSkip())
+				.Take(searchParameters.PageSize)
 				.ToArrayAsync();
 
-			var pageData = new PageData<Category>(data, parameters.Page, parameters.PageSize, amount);
+			var pageData = new PageData<Category>(data, searchParameters.Page, searchParameters.PageSize, totalAmount);
 			return pageData;
 		}
 
