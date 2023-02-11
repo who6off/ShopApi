@@ -15,9 +15,9 @@ namespace ShopApi.Data.Repositories
 		{
 			var query = _context.Categories.OrderBy(i => i.DisplayOrder).AsQueryable();
 
-			if (searchParameters.IsForAdults is not null)
+			if (searchParameters.Name is not null)
 			{
-				query = query.Where(i => EF.Functions.Like(i.Name, $"{searchParameters.Name}%");
+				query = query.Where(i => EF.Functions.Like(i.Name, $"{searchParameters.Name}%"));
 			}
 
 			if (searchParameters.IsForAdults is not null)

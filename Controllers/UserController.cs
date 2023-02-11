@@ -91,6 +91,17 @@ namespace ShopApi.Controllers
 		}
 
 
+		[HttpGet]
+		[Authorize(Roles = UserRoles.Admin)]
+		[Route("{id:required}")]
+		public async Task<IActionResult> GetUserById([FromRoute] int id)
+		{
+			var users = await _userService.GetById(id);
+			return Ok(users);
+		}
+
+
+
 		[HttpPost]
 		[Authorize(Roles = UserRoles.Admin)]
 		public async Task<IActionResult> AddUser([FromBody] UserForCreationDTO dto)
@@ -157,9 +168,9 @@ namespace ShopApi.Controllers
 		[HttpGet]
 		[Authorize(Roles = UserRoles.Admin)]
 		[Route("roles")]
-		public async Task<IActionResult> GetRoles([FromQuery] RoleSearchParameters searchParameters)
+		public async Task<IActionResult> GetRoles()
 		{
-			var roles = await _userService.GetRoles(searchParameters);
+			var roles = await _userService.GetRoles();
 			return Ok(roles);
 		}
 	}

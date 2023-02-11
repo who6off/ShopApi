@@ -1,5 +1,4 @@
-﻿using ShopApi.Data.Models;
-using ShopApi.Data.Models.SearchParameters;
+﻿using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Helpers.Interfaces;
 using ShopApi.Models.DTOs.Role;
 using ShopApi.Models.DTOs.User;
@@ -24,8 +23,6 @@ namespace ShopApi.Services.Interfaces
 
 		public Task<UserDTO?> Delete(int id);
 
-		public Task<RoleDTO> AddRole(Role role);
-
-		public Task<IPageData<RoleDTO>> GetRoles(RoleSearchParameters searchParameters);
+		public Task<RoleDTO[]> GetRoles();
 	}
 }

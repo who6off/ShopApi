@@ -53,8 +53,32 @@ namespace ShopApi.Repositories
 				.Include(i => i.Role)
 				.AsQueryable();
 
-			var totalAmount = await query.CountAsync();
+			if (searchParameters.FirstName is not null)
+			{
+				query = query.Where(i => EF.Functions.Like(i.FirstName, $"{searchParameters.FirstName}%"));
+			}
 
+			if (searchParameters.SecondName is not null)
+			{
+				query = query.Where(i => EF.Functions.Like(i.FirstName, $"{searchParameters.FirstName}%"));
+			}
+
+			if (searchParameters.Email is not null)
+			{
+				query = query.Where(i => i.Email == searchParameters.Email);
+			}
+
+			if (searchParameters.RoleId is not null)
+			{
+				query = query.Where(i => i.RoleId == searchParameters.RoleId);
+			}
+
+			if (searchParameters.BirthDate is not null)
+			{
+				query = query.Where(i => i.BirthDate == searchParameters.BirthDate);
+			}
+
+			var totalAmount = await query.CountAsync();
 			var data = await query
 				.Skip(searchParameters.GetSkip())
 				.Take(searchParameters.PageSize)
