@@ -9,6 +9,7 @@
 		public string? CategoryName { get; set; }
 		public bool? IsForAdults { get; set; }
 		public int SellerId { get; set; }
+		public string? SellerName { get; set; }
 		public string? Image { get; set; }
 	}
 }

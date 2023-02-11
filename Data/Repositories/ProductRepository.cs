@@ -16,6 +16,7 @@ namespace ShopApi.Data.Repositories
 		{
 			var query = _context.Products
 				.Include(i => i.Category)
+				.Include(i => i.Seller)
 				.AsQueryable();
 
 			if (searchParameters.Name is not null)
@@ -58,9 +59,11 @@ namespace ShopApi.Data.Repositories
 			var result = await _context
 				.Products
 				.Include(i => i.Category)
+				.Include(i => i.Seller)
 				.FirstOrDefaultAsync(i => i.Id == id);
 			return result;
 		}
+
 
 		public async Task<Product?> Add(Product product)
 		{
@@ -68,7 +71,10 @@ namespace ShopApi.Data.Repositories
 			{
 				var entityEntry = await _context.Products.AddAsync(product);
 				await _context.SaveChangesAsync();
+
 				await _context.Entry(entityEntry.Entity).Reference(i => i.Category).LoadAsync();
+				await _context.Entry(entityEntry.Entity).Reference(i => i.Seller).LoadAsync();
+
 				return entityEntry.Entity;
 			}
 			catch (Exception e)
@@ -76,6 +82,7 @@ namespace ShopApi.Data.Repositories
 				return null;
 			}
 		}
+
 
 		public async Task<Product?> Delete(int id)
 		{
@@ -108,7 +115,10 @@ namespace ShopApi.Data.Repositories
 					_context.ChangeTracker.Clear(); //Update fix
 					var entityEntry = _context.Products.Update(product);
 					_context.SaveChanges();
+
 					_context.Entry(entityEntry.Entity).Reference(i => i.Category).Load();
+					_context.Entry(entityEntry.Entity).Reference(i => i.Seller).Load();
+
 					return entityEntry.Entity;
 				}
 				catch (Exception e)

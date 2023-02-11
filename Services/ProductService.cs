@@ -212,37 +212,5 @@ namespace ShopApi.Services
 				throw new AccessDeniedException("Access denied!");
 			}
 		}
-
-
-
-
-		public async Task<Category?> GetCategoryById(int id)
-		{
-			var result = await _categoryRepository.GetById(id);
-			return result;
-		}
-
-		public async Task<int?> GetSellerIdByProductId(int id)
-		{
-			var product = await _productRepository.GetById(id);
-			return (product is null) ? null : product.SellerId;
-		}
-
-
-		public async Task<Category> AddCategory(Category category)
-		{
-			category.Name = category.Name.FirstCharToUpper();
-			var result = await _categoryRepository.Add(category);
-			return result;
-		}
-
-		public async Task<Category[]> GetCategories(bool isAdults)
-		{
-			throw new NotImplementedException();
-			//var result = await _categoryRepository.GetAll()
-			//	.Where(i => i.IsForAdults == isAdults)
-			//	.ToArrayAsync();
-			//return result;
-		}
 	}
 }

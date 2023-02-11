@@ -35,5 +35,7 @@ namespace ShopApi.Data.Models
 		public string? GetCategoryName() => Category?.Name;
 
 		public bool? GetIsForAdults() => Category?.IsForAdults;
+
+		public string? GetSellerName() => (Seller is null) ? null : $"{Seller.FirstName} {Seller.SecondName}";
 	}
 }
