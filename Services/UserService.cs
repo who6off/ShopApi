@@ -143,7 +143,7 @@ namespace ShopApi.Services
 
 			if (!IsAgeAppropriateForTheRole(role.Name, dto.BirthDate.Value))
 			{
-				throw new AppException("Inappropriate user age!");
+				throw new ClientInputException("Inappropriate user age!");
 			}
 
 			user.PasswordHash = _passwordHasher.Hash(dto.Password);
