@@ -38,6 +38,7 @@ namespace ShopApi.Middleware
 			await httpContext.Response.WriteAsJsonAsync(new
 			{
 				ErrorCode = exception.ErrorCode,
+				ErrorDetails = exception.ErrorDetails,
 				Message = exception.Message
 			});
 		}

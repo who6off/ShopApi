@@ -65,6 +65,19 @@ namespace ShopApi.Data.Repositories
 		}
 
 
+		public async Task<Product[]> GetRangeById(IEnumerable<int> ids)
+		{
+			var result = await _context
+				.Products
+				.Where(i => ids.Contains(i.Id))
+				.Include(i => i.Category)
+				.Include(i => i.Seller)
+				.ToArrayAsync();
+
+			return result;
+		}
+
+
 		public async Task<Product?> Add(Product product)
 		{
 			try
@@ -89,6 +102,11 @@ namespace ShopApi.Data.Repositories
 			return await Task.Run(async () =>
 			{
 				Product? product = await GetById(id);
+
+				if (product is null)
+				{
+					return null;
+				}
 
 				try
 				{

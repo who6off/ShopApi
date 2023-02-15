@@ -20,6 +20,17 @@ namespace ShopApi.Data.Models
 		[ForeignKey("BuyerId")]
 		public virtual User? Buyer { get; set; }
 
+		[Required]
+		public bool IsCanceled { get; set; } = false;
+
+		[Required]
+		public bool IsDelivered { get; set; } = false;
+
+		public DateTime? DeliveryDate { get; set; }
+
 		public virtual ICollection<OrderItem> OrderItems { get; set; }
+
+
+		public OrderItem[] GetItems() => OrderItems.ToArray();
 	}
 }

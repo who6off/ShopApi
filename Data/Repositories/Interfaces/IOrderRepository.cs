@@ -1,15 +1,23 @@
 ﻿using ShopApi.Data.Models;
+using ShopApi.Data.Models.SearchParameters;
+using ShopApi.Helpers.Interfaces;
 
 namespace ShopApi.Data.Repositories.Interfaces
 {
     public interface IOrderRepository
     {
+        public Task<IPageData<Order>> Get(OrderSearchParameters searchParameters);
         public Task<Order?> GetById(int id);
-        public IQueryable<Order> GetByUserId(int id);
-        public IQueryable<Order> GetBySellerId(int id);
         public Task<Order?> Add(Order order);
         public Task<Order?> Update(Order order);
-        public Task<bool> Delete(int id);
+        public Task<Order?> Delete(int id);
+
+
+        public Task<OrderItem> AddOrderItem(OrderItem orderItem);
+
+
+        public IQueryable<Order> GetByUserId(int id);
+        public IQueryable<Order> GetBySellerId(int id);
         public Task<Order?> FindUnrequestedForDeliveryOrder(int buyerId);
 
         public Task<OrderItem?> GetOrderItemById(int id);
@@ -19,5 +27,6 @@ namespace ShopApi.Data.Repositories.Interfaces
         public Task<OrderItem?> UpdateOrderItem(OrderItem orderItem);
         public Task<bool> DeleteOrderItem(OrderItem orderItem);
         public Task DeleteOrderItems(ICollection<OrderItem> orderItems);
+
     }
 }

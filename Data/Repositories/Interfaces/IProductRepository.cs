@@ -8,6 +8,7 @@ namespace ShopApi.Data.Repositories.Interfaces
 	{
 		public Task<IPageData<Product>> Get(ProductSearchParameters seachParameters);
 		public Task<Product?> GetById(int id);
+		public Task<Product[]> GetRangeById(IEnumerable<int> ids);
 		public Task<Product> Add(Product product);
 		public Task<Product?> Update(Product product);
 		public Task<Product?> Delete(int id);
