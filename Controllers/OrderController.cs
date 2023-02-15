@@ -90,10 +90,10 @@ namespace ShopApi.Controllers
 
 		[HttpPost]
 		[Authorize]
-		[Route("{id:required}/item")]
-		public async Task<IActionResult> AddOrderItem([FromRoute] int id, [FromBody] OrderItemForCreationDTO dto)
+		[Route("{orderId:required}/item")]
+		public async Task<IActionResult> AddOrderItem([FromRoute] int orderId, [FromBody] OrderItemForCreationDTO dto)
 		{
-			var newOrderItem = await _orderService.AddOrderItem(id, dto);
+			var newOrderItem = await _orderService.AddOrderItem(orderId, dto);
 
 			return Ok(newOrderItem);
 		}
@@ -101,164 +101,30 @@ namespace ShopApi.Controllers
 
 		[HttpPut]
 		[Authorize]
-		[Route("{id:required}/item/{itemId:required}")]
+		[Route("{orderId:required}/item/{itemId:required}")]
 		public async Task<IActionResult> AddOrderItem(
-			[FromRoute] int id,
+			[FromRoute] int orderId,
 			[FromRoute] int itemId,
 			[FromBody] OrderItemForUpdateDTO dto
 		)
 		{
-			var updatedOrderItem = await _orderService.UpdateOrderItem(id, itemId, dto);
+			var updatedOrderItem = await _orderService.UpdateOrderItem(orderId, itemId, dto);
 
 			return Ok(updatedOrderItem);
 		}
 
 
-		[HttpPut]
+		[HttpDelete]
 		[Authorize]
-		[Route("{id:required}/item/{itemId:required}")]
-		public async Task<IActionResult> DeleteOrderItem([FromRoute] int id, [FromRoute] int itemId)
+		[Route("{orderId:required}/item/{itemId:required}")]
+		public async Task<IActionResult> DeleteOrderItem([FromRoute] int orderId, [FromRoute] int itemId)
 		{
-			var deletedOrderItem = await _orderService.DeleteOrderItem(id, itemId);
+			var deletedOrderItem = await _orderService.DeleteOrderItem(orderId, itemId);
 
 			return Ok(deletedOrderItem);
 		}
 
 
-		//[HttpGet]
-		//[Route("seller/{id}")]
-		//[Authorize]
-		//public async Task<IActionResult> GetSellerOrders(int id)
-		//{
-		//	var userId = HttpContext.User.GetUserId();
-		//	var userRole = HttpContext.User.GetUserRole();
 
-		//	if (userRole != UserRoles.Admin && userId != id)
-		//		return StatusCode(StatusCodes.Status403Forbidden);
-
-		//	var orders = await _orderService.GetSellerOrders(id);
-
-		//	return (orders is null) ? BadRequest() : Ok(orders);
-		//}
-
-
-
-
-		//[HttpPut]
-		//[Route("{id}")]
-		//[Authorize]
-		//public async Task<IActionResult> RequestDelivery(int id)
-		//{
-		//	if (!(await IsPermitedOrder(id)))
-		//		return StatusCode(StatusCodes.Status403Forbidden);
-
-		//	var order = await _orderService.RequestDelivery(id);
-
-		//	return (order is null) ? BadRequest() : Ok(order);
-		//}
-
-
-		//[HttpPost]
-		//[Route("item")]
-		//[Authorize]
-		//public async Task<IActionResult> AddProductToOrder(
-		//	OrderProductRequest request,
-		//	[FromServices] IConfiguration configuration
-		//	)
-		//{
-		//	var buyerId = HttpContext.User.GetUserId();
-		//	var product = await _productService.GetById(request.ProductId);
-
-		//	if (product is null)
-		//		return StatusCode(StatusCodes.Status404NotFound);
-
-		//	if (product.Category.IsForAdults && !HttpContext.User.IsAdult())
-		//		return StatusCode(StatusCodes.Status403Forbidden);
-
-		//	if (request.OrderId is not null)
-		//	{
-		//		if (!(await IsPermitedOrder(request.OrderId.Value)))
-		//		{
-		//			return StatusCode(StatusCodes.Status403Forbidden);
-		//		}
-		//	}
-
-		//	var orderItem = await _orderService.AddProductToOrder(request, buyerId.Value);
-
-		//	return (orderItem is null) ? BadRequest() : Ok(orderItem);
-		//}
-
-		//[HttpPut]
-		//[Route("item")]
-		//[Authorize]
-		//public async Task<IActionResult> UpdateOrderItem(OrderProductUpdateRequest request)
-		//{
-		//	var orderItem = await _orderService.GetOrderItemById(request.Id);
-
-		//	if (orderItem is null)
-		//		return StatusCode(StatusCodes.Status404NotFound);
-
-		//	if (!(await IsPermitedOrder(orderItem.OrderId.Value)))
-		//		return StatusCode(StatusCodes.Status403Forbidden);
-
-		//	var result = await _orderService.UpdateProductInOrder(request, orderItem);
-		//	return (result is null) ? BadRequest() : Ok(result);
-		//}
-
-		//[HttpDelete]
-		//[Route("item/{id}")]
-		//[Authorize]
-		//public async Task<IActionResult> DeleteOrderItem(int id)
-		//{
-		//	var orderItem = await _orderService.GetOrderItemById(id);
-
-		//	if (orderItem is null)
-		//		return StatusCode(StatusCodes.Status404NotFound);
-
-		//	if (!(await IsPermitedOrder(orderItem.OrderId.Value)))
-		//		return StatusCode(StatusCodes.Status403Forbidden);
-
-		//	var isDeleted = await _orderService.DeleteProductInOrder(orderItem);
-		//	return isDeleted ? Ok() : BadRequest();
-		//}
-
-
-		//[ApiExplorerSettings(IgnoreApi = true)]
-		//private async Task<bool> IsPermitedOrder(int orderId)
-		//{
-		//	var buyerId = HttpContext.User.GetUserId();
-		//	return await IsPermitedOrder(orderId, buyerId.Value);
-		//}
-
-
-		//[ApiExplorerSettings(IgnoreApi = true)]
-		//private async Task<bool> IsPermitedOrder(int orderId, int buyerId)
-		//{
-		//	var order = await _orderService.GetById(orderId);
-		//	if (order is null)
-		//		return false;
-
-		//	return (order.BuyerId == buyerId) && !order.IsRequestedForDelivery;
-		//}
-
-
-		//[ApiExplorerSettings(IgnoreApi = true)]
-		//private async Task<OrderRequestItem[]> GetPermitedRequestItems(OrderRequestItem[] items)
-		//{
-		//	Predicate<Product?> Predicate = (HttpContext.User.IsAdult())
-		//		? (Product? product) => product is not null
-		//		: (Product? product) => product is not null && !product.Category.IsForAdults;
-
-		//	return await Task.Run(() =>
-		//	{
-		//		return items
-		//		.Where((i) =>
-		//		{
-		//			var product = _productService.GetById(i.ProductId).Result;
-		//			return Predicate(product);
-		//		})
-		//		.ToArray();
-		//	});
-		//}
 	}
 }

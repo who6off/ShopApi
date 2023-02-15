@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using ShopApi.Authentication;
 using ShopApi.Authorization;
 using ShopApi.Data.Models;
@@ -8,7 +7,6 @@ using ShopApi.Data.Repositories.Interfaces;
 using ShopApi.Helpers.Exceptions;
 using ShopApi.Helpers.Interfaces;
 using ShopApi.Models.DTOs.Order;
-using ShopApi.Models.Requests;
 using ShopApi.Services.Interfaces;
 
 namespace ShopApi.Services
@@ -158,7 +156,6 @@ namespace ShopApi.Services
 		public async Task<OrderItemDTO> AddOrderItem(int orderId, OrderItemForCreationDTO dto)
 		{
 			var order = await _orderRepository.GetById(orderId);
-
 			if (order is null)
 			{
 				throw new NotFoundException("Order is not found!");
@@ -166,10 +163,21 @@ namespace ShopApi.Services
 
 			//Authorization
 
-			var orderItem = _mapper.Map<OrderItem>(dto);
-			orderItem.OrderId = orderId;
+			OrderItem? newOrderItem = null;
+			var sameExistingItem = order.OrderItems.FirstOrDefault(i => i.ProductId == dto.ProductId);
 
-			var newOrderItem = await _orderRepository.AddOrderItem(orderItem);
+			if (sameExistingItem is null)
+			{
+				var orderItem = _mapper.Map<OrderItem>(dto);
+				orderItem.OrderId = orderId;
+				newOrderItem = await _orderRepository.AddOrderItem(orderItem);
+			}
+			else
+			{
+				sameExistingItem.Amount += (uint)dto.Amount;
+				newOrderItem = await _orderRepository.UpdateOrderItem(sameExistingItem);
+			}
+
 			if (newOrderItem is null)
 			{
 				throw new AppException("Creation error!");
@@ -180,147 +188,80 @@ namespace ShopApi.Services
 		}
 
 
-		public Task<OrderItemDTO> UpdateOrderItem(int orderId, int itemId, OrderItemForUpdateDTO dto)
+		public async Task<OrderItemDTO> UpdateOrderItem(int orderId, int itemId, OrderItemForUpdateDTO dto)
 		{
-			throw new NotImplementedException();
-		}
-
-		public Task<OrderItemDTO> DeleteOrderItem(int orderId, int itemId)
-		{
-			throw new NotImplementedException();
-		}
-
-
-		public async Task<Order[]> GetUserOrders(int id)
-		{
-			var orders = await _orderRepository.GetByUserId(id)
-				.OrderByDescending(i => i.Id)
-				.ToArrayAsync();
-
-			return orders;
-		}
-
-
-		public async Task<Order[]> GetSellerOrders(int id)
-		{
-			var orders = await _orderRepository.GetBySellerId(id)
-				.OrderByDescending(i => i.Id)
-				.ToArrayAsync();
-
-			return orders;
-		}
-
-
-		//public async Task<Order?> Update(OrderUpdateRequest request)
-		//{
-		//	var order = await _orderRepository.GetById(request.OrderId);
-
-		//	var newItems = GroupOrderItems(request.Items)
-		//		.Select(i =>
-		//		{
-		//			var existedItem = order.OrderItems.FirstOrDefault(oi => oi.ProductId == i.ProductId);
-		//			if (existedItem is null)
-		//			{
-		//				return new OrderItem()
-		//				{
-		//					OrderId = order.Id,
-		//					ProductId = i.ProductId,
-		//					Amount = i.Amount
-		//				};
-		//			}
-		//			else
-		//			{
-		//				order.OrderItems.Remove(existedItem);
-		//				existedItem.Amount = i.Amount;
-		//				return existedItem;
-		//			}
-		//		})
-		//		.ToArray();
-
-		//	await _orderRepository.DeleteOrderItems(order.OrderItems);
-
-		//	order.OrderItems = newItems;
-		//	var updated = await _orderRepository.Update(order);
-
-		//	return updated;
-		//}
-
-
-		public async Task<Order?> RequestDelivery(int id)
-		{
-			var order = await _orderRepository.GetById(id);
-			order.IsRequestedForDelivery = true;
-			order.Date = DateTime.Now;
-
-			order = await _orderRepository.Update(order);
-
-			return order;
-		}
-
-
-		public async Task<OrderItem?> GetOrderItemById(int id)
-		{
-			var orderItem = await _orderRepository.GetOrderItemById(id);
-			return orderItem;
-		}
-
-
-		public async Task<OrderItem?> AddProductToOrder(OrderProductRequest request, int buyerId)
-		{
-			var orderId =
-				request.OrderId ??
-				(await _orderRepository.FindUnrequestedForDeliveryOrder(buyerId))?.Id;
-
-			if (orderId is not null)
+			var order = await _orderRepository.GetById(orderId);
+			if (order is null)
 			{
-				var orderItem = await _orderRepository.FindOrderItem(orderId.Value, request.ProductId);
-
-				if (orderItem is not null)
-				{
-					orderItem.Amount += request.Amount;
-					return await _orderRepository.UpdateOrderItem(orderItem);
-				}
+				throw new NotFoundException("Order is not found!");
 			}
 
-			if (orderId is null)
-				orderId = (await _orderRepository.Add(new Order()
-				{
-					BuyerId = buyerId,
-					Date = DateTime.Now
-				}))?.Id;
-
-			var result = (orderId is null)
-				? null
-				: await _orderRepository.AddProductToOrder(new OrderItem()
-				{
-					ProductId = request.ProductId,
-					Amount = request.Amount,
-					OrderId = orderId.Value,
-				});
-
-			return result;
-		}
-
-
-		public async Task<OrderItem?> UpdateProductInOrder(OrderProductUpdateRequest request, OrderItem orderItem)
-		{
-			var updatedOrderItem = await _orderRepository.UpdateOrderItem(new OrderItem()
+			var orderItem = order.OrderItems.FirstOrDefault(i => i.Id == itemId);
+			if (orderItem is null)
 			{
-				Id = request.Id,
-				Amount = request.Amount,
-				ProductId = orderItem.ProductId,
-				OrderId = orderItem.OrderId
-			});
+				throw new NotFoundException("Order item is not found");
+			}
 
-			return updatedOrderItem;
+			//Authorization
+
+			orderItem = _mapper.Map<OrderItem>(dto);
+			orderItem.Id = itemId;
+			orderItem.OrderId = orderId;
+
+			var updatedOrderItem = await _orderRepository.UpdateOrderItem(orderItem);
+			if (updatedOrderItem is null)
+			{
+				throw new AppException("Update error!");
+			}
+
+			var updatedOrderItemDto = _mapper.Map<OrderItemDTO>(updatedOrderItem);
+			return updatedOrderItemDto;
 		}
 
-		public async Task<bool> DeleteProductInOrder(OrderItem orderItem)
+		public async Task<OrderItemDTO> DeleteOrderItem(int orderId, int itemId)
 		{
-			var isDeleted = await _orderRepository.DeleteOrderItem(orderItem);
+			var order = await _orderRepository.GetById(orderId);
+			if (order is null)
+			{
+				throw new NotFoundException("Order is not found!");
+			}
 
-			return isDeleted;
+			var orderItem = order.OrderItems.FirstOrDefault(i => i.Id == itemId);
+			if (orderItem is null)
+			{
+				throw new NotFoundException("Order item is not found");
+			}
+
+			//Authorization
+
+			OrderItem? deletedOrderItem = null;
+
+			if (order.OrderItems.Count == 1)
+			{
+				var deletedOrder = await _orderRepository.Delete(order.Id);
+				if (deletedOrder is null)
+				{
+					throw new AppException("Delete error!");
+				}
+
+				deletedOrderItem = order.OrderItems.ElementAt(0);
+			}
+			else
+			{
+				deletedOrderItem = await _orderRepository.DeleteOrderItem(itemId);
+			}
+
+
+			if (deletedOrderItem is null)
+			{
+				throw new AppException("Delete error!");
+			}
+
+			var deletedOrderItemDto = _mapper.Map<OrderItemDTO>(deletedOrderItem);
+			return deletedOrderItemDto;
 		}
+
+
 
 
 		private OrderItemForCreationDTO[] GroupOrderItems(OrderItemForCreationDTO[] items)

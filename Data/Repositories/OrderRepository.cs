@@ -202,6 +202,24 @@ namespace ShopApi.Data.Repositories
 		}
 
 
+		public async Task<OrderItem?> GetOrderItemById(int id)
+		{
+			try
+			{
+				var orderItem = await _context.OrderItem
+					.Include(i => i.Product)
+					.Include(i => i.Product.Category)
+					.Include(i => i.Product.Seller)
+					.FirstOrDefaultAsync(i => i.Id == id);
+
+				return orderItem;
+			}
+			catch (Exception e)
+			{
+				return null;
+			}
+		}
+
 		public async Task<OrderItem?> AddOrderItem(OrderItem orderItem)
 		{
 			try
@@ -222,98 +240,10 @@ namespace ShopApi.Data.Repositories
 					.Include(i => i.Seller)
 					.LoadAsync();
 
-				return entityEntry?.Entity;
+				return newOrderItem;
 			}
 			catch (Exception e)
 			{
-				return null;
-			}
-		}
-
-
-		public async Task<Order?> FindUnrequestedForDeliveryOrder(int buyerId)
-		{
-			try
-			{
-				var order = await _context
-					.Orders
-					.FirstOrDefaultAsync(i => i.BuyerId == buyerId && !i.IsRequestedForDelivery);
-				return order;
-			}
-			catch (Exception e)
-			{
-				//TODO: Add Log!
-				return null;
-			}
-		}
-
-
-		public async Task<OrderItem?> AddProductToOrder(OrderItem orderItem)
-		{
-			try
-			{
-				var newOrderItem = await _context.AddAsync(orderItem);
-				await _context.SaveChangesAsync();
-
-				return newOrderItem.Entity;
-			}
-			catch
-			{
-				//TODO: Add log
-				return null;
-			}
-		}
-
-
-		public async Task AddProductsToOrder(ICollection<OrderItem> orderItems)
-		{
-			try
-			{
-				await _context.AddRangeAsync(orderItems);
-				await _context.SaveChangesAsync();
-			}
-			catch
-			{
-				//TODO: Add log
-			}
-		}
-
-
-		public async Task<OrderItem?> FindOrderItem(int orderId, int productId)
-		{
-			try
-			{
-				var orderItem = await _context
-					.Orders
-					.Include(o => o.OrderItems)
-					.Where(o => o.Id == orderId)
-					.Select(o => o.OrderItems.Where(oi => oi.ProductId == productId))
-					.FirstOrDefaultAsync();
-
-				return orderItem?.First();
-			}
-			catch (Exception e)
-			{
-				//TODO: Add log
-				return null;
-			}
-		}
-
-		public async Task<OrderItem?> GetOrderItemById(int id)
-		{
-			try
-			{
-				var orderItem = await _context
-					.Orders
-					.Where(o => o.OrderItems.Any(oi => oi.Id == id))
-					.Select(o => o.OrderItems.Where(oi => oi.Id == id))
-					.FirstOrDefaultAsync();
-
-				return orderItem?.First();
-			}
-			catch (Exception e)
-			{
-				//TODO: Add log
 				return null;
 			}
 		}
@@ -326,53 +256,57 @@ namespace ShopApi.Data.Repositories
 				try
 				{
 					_context.ChangeTracker.Clear();
-					var updetedOrderItem = _context.Update(orderItem);
+					var entityEntry = _context.OrderItem.Update(orderItem);
 					_context.SaveChanges();
-					return updetedOrderItem.Entity;
+
+					var updatedOrderItem = entityEntry?.Entity;
+					if (updatedOrderItem is null)
+					{
+						return null;
+					}
+
+					_context.Entry(updatedOrderItem)
+						.Reference(i => i.Product)
+						.Query()
+						.Include(i => i.Category)
+						.Include(i => i.Seller)
+						.LoadAsync();
+
+					return updatedOrderItem;
 				}
 				catch (Exception e)
 				{
-					//TODO: Add log
 					return null;
 				}
 			});
 		}
 
 
-		public Task<bool> DeleteOrderItem(OrderItem orderItem)
+		public Task<OrderItem?> DeleteOrderItem(int id)
 		{
-			return Task.Run(() =>
+			return Task.Run(async () =>
 			{
 				try
 				{
-					_context.ChangeTracker.Clear();
-					var deletedOrderItem = _context.Remove(orderItem);
-					_context.SaveChanges();
-					return deletedOrderItem is not null;
-				}
-				catch (Exception e)
-				{
-					//TODO: Add log
-					return false;
-				}
-			});
-		}
+					var orderItem = await GetOrderItemById(id);
+					if (orderItem is null)
+					{
+						return null;
+					}
 
-		public Task DeleteOrderItems(ICollection<OrderItem> orderItems)
-		{
-			return Task.Run(() =>
-			{
-				try
-				{
 					_context.ChangeTracker.Clear();
-					_context.RemoveRange(orderItems);
+					var entityEntry = _context.OrderItem.Remove(orderItem);
 					_context.SaveChanges();
+
+					return (entityEntry is null) ? null : orderItem;
 				}
 				catch (Exception e)
 				{
-					//TODO: Add log
+					return null;
 				}
 			});
 		}
 	}
 }
+
+
