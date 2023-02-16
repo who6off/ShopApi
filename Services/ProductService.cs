@@ -204,8 +204,7 @@ namespace ShopApi.Services
 				throw new NotFoundException("Product is not found!");
 			}
 
-			var isAuthorized = await _authorizationService.AuthorizeAsync(
-				_httpContext.User, product, requirement);
+			var isAuthorized = await _authorizationService.AuthorizeAsync(_httpContext.User, product, requirement);
 
 			if (!isAuthorized.Succeeded)
 			{

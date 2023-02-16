@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using ShopApi.Authentication;
 using ShopApi.Authorization;
 using ShopApi.Data.Models;
@@ -15,6 +16,7 @@ namespace ShopApi.Services
 	{
 		private readonly IOrderRepository _orderRepository;
 		private readonly IProductRepository _productRepository;
+		private readonly IAuthorizationService _authorizationService;
 		private readonly IMapper _mapper;
 		private readonly HttpContext _httpContext;
 
@@ -22,11 +24,13 @@ namespace ShopApi.Services
 			IOrderRepository orderRepository,
 			IProductRepository productRepository,
 			IHttpContextAccessor httpContextAccessor,
+			IAuthorizationService authorizationService,
 			IMapper mapper
 		)
 		{
 			_orderRepository = orderRepository;
 			_productRepository = productRepository;
+			_authorizationService = authorizationService;
 			_mapper = mapper;
 
 			if (httpContextAccessor.HttpContext is null)
@@ -65,13 +69,7 @@ namespace ShopApi.Services
 		public async Task<OrderDTO> GetById(int id)
 		{
 			var order = await _orderRepository.GetById(id);
-
-			//Authorization
-
-			if (order is null)
-			{
-				throw new NotFoundException("Order is not found!");
-			}
+			await Authorize(order, OrderOperations.Get);
 
 			var orderDto = _mapper.Map<OrderDTO>(order);
 			return orderDto;
@@ -103,13 +101,7 @@ namespace ShopApi.Services
 		public async Task<OrderDTO> Update(int id, OrderForUpdateDTO dto)
 		{
 			var order = await _orderRepository.GetById(id);
-
-			if (order is null)
-			{
-				throw new NotFoundException("Order is not found!");
-			}
-
-			//Authorization
+			await Authorize(order, OrderOperations.Update);
 
 			dto.OrderItems = GroupOrderItems(dto.OrderItems);
 			var orderedProducts = await _productRepository.GetRangeById(dto.OrderItems!.Select(i => i.ProductId!.Value));
@@ -133,13 +125,7 @@ namespace ShopApi.Services
 		public async Task<OrderDTO> Delete(int id)
 		{
 			var order = await _orderRepository.GetById(id);
-
-			if (order is null)
-			{
-				throw new NotFoundException("Order is not found!");
-			}
-
-			//Authorization
+			await Authorize(order, OrderOperations.Delete);
 
 			var deletedOrder = await _orderRepository.Delete(id);
 
@@ -156,12 +142,10 @@ namespace ShopApi.Services
 		public async Task<OrderItemDTO> AddOrderItem(int orderId, OrderItemForCreationDTO dto)
 		{
 			var order = await _orderRepository.GetById(orderId);
-			if (order is null)
-			{
-				throw new NotFoundException("Order is not found!");
-			}
+			await Authorize(order, OrderOperations.Update);
 
-			//Authorization
+			var product = await _productRepository.GetById(dto.ProductId.Value);
+			CheckForProhibitedItems(product);
 
 			OrderItem? newOrderItem = null;
 			var sameExistingItem = order.OrderItems.FirstOrDefault(i => i.ProductId == dto.ProductId);
@@ -191,18 +175,11 @@ namespace ShopApi.Services
 		public async Task<OrderItemDTO> UpdateOrderItem(int orderId, int itemId, OrderItemForUpdateDTO dto)
 		{
 			var order = await _orderRepository.GetById(orderId);
-			if (order is null)
-			{
-				throw new NotFoundException("Order is not found!");
-			}
+			var orderItem = order?.OrderItems.FirstOrDefault(i => i.Id == itemId);
+			await Authorize(order, orderItem, OrderOperations.Update);
 
-			var orderItem = order.OrderItems.FirstOrDefault(i => i.Id == itemId);
-			if (orderItem is null)
-			{
-				throw new NotFoundException("Order item is not found");
-			}
-
-			//Authorization
+			var product = await _productRepository.GetById(dto.ProductId.Value);
+			CheckForProhibitedItems(product);
 
 			orderItem = _mapper.Map<OrderItem>(dto);
 			orderItem.Id = itemId;
@@ -218,21 +195,12 @@ namespace ShopApi.Services
 			return updatedOrderItemDto;
 		}
 
+
 		public async Task<OrderItemDTO> DeleteOrderItem(int orderId, int itemId)
 		{
 			var order = await _orderRepository.GetById(orderId);
-			if (order is null)
-			{
-				throw new NotFoundException("Order is not found!");
-			}
-
-			var orderItem = order.OrderItems.FirstOrDefault(i => i.Id == itemId);
-			if (orderItem is null)
-			{
-				throw new NotFoundException("Order item is not found");
-			}
-
-			//Authorization
+			var orderItem = order?.OrderItems.FirstOrDefault(i => i.Id == itemId);
+			await Authorize(order, orderItem, OrderOperations.Update);
 
 			OrderItem? deletedOrderItem = null;
 
@@ -262,6 +230,45 @@ namespace ShopApi.Services
 		}
 
 
+		private async Task Authorize(Order? order, IAuthorizationRequirement requirement)
+		{
+			if (order is null)
+			{
+				throw new NotFoundException("Order is not found!");
+			}
+
+			var isAuthorized = await _authorizationService.AuthorizeAsync(_httpContext.User, order, requirement);
+
+			if (!isAuthorized.Succeeded)
+			{
+				throw new AccessDeniedException("Access denied!");
+			}
+
+			if ((requirement == OrderOperations.Update) && order.IsRequestedForDelivery)
+			{
+				throw new ClientInputException("Can't change completed order!");
+			}
+
+			if (
+				(requirement == OrderOperations.Delete) &&
+				order.IsRequestedForDelivery &&
+				(_httpContext.User.GetUserRole() != UserRoles.Admin)
+			)
+			{
+				throw new ClientInputException("Can't delete completed order!");
+			}
+		}
+
+
+		private async Task Authorize(Order? order, OrderItem? orderItem, IAuthorizationRequirement requirement)
+		{
+			await Authorize(order, requirement);
+
+			if (orderItem is null)
+			{
+				throw new NotFoundException("Order item is not found");
+			}
+		}
 
 
 		private OrderItemForCreationDTO[] GroupOrderItems(OrderItemForCreationDTO[] items)
@@ -277,8 +284,13 @@ namespace ShopApi.Services
 		}
 
 
-		private void CheckForProhibitedItems(Product[] products)
+		private void CheckForProhibitedItems(params Product[] products)
 		{
+			if ((products is null) || products.Any(i => i is null))
+			{
+				throw new NotFoundException("Product is not found!");
+			}
+
 			if (_httpContext.User.IsAdult())
 			{
 				return;

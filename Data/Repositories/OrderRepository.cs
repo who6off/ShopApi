@@ -270,7 +270,7 @@ namespace ShopApi.Data.Repositories
 						.Query()
 						.Include(i => i.Category)
 						.Include(i => i.Seller)
-						.LoadAsync();
+						.Load();
 
 					return updatedOrderItem;
 				}

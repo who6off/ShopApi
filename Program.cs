@@ -46,6 +46,7 @@ namespace ShopApi
 						 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
 					 };
 				 });
+
 			services.AddAuthorization(options =>
 			{
 				options.AddPolicy(
@@ -53,9 +54,16 @@ namespace ShopApi
 					p => p.AddRequirements(new AgeRestrictionPolicy(configuration.GetAdultAge())));
 			});
 
-
 			services.AddCors();
+			services.AddControllers();
 
+			services.AddDbContext<ShopContext>(options =>
+			{
+				options.UseSqlServer(
+					configuration.GetConnectionString(builder.Environment.EnvironmentName));
+			});
+
+			services.AddAutoMapper(typeof(Program));
 
 			services.AddSwaggerGen(options =>
 			{
@@ -86,28 +94,15 @@ namespace ShopApi
 				}});
 			});
 
-
-			services.AddControllers();
-
-
 			services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 			services.Configure<ShopDbSettings>(configuration.GetSection(ShopDbSettings.SectionName));
-
-
-			services.AddDbContext<ShopContext>(options =>
-			 {
-				 options.UseSqlServer(
-					 configuration.GetConnectionString(builder.Environment.EnvironmentName));
-			 });
-
-
-			builder.Services.AddAutoMapper(typeof(Program));
 
 
 			services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 
 			services.AddSingleton<IAuthorizationHandler, AgeRestrictionPolicyHandler>();
 			services.AddTransient<IAuthorizationHandler, ProductAccessRestrictions>();
+			services.AddTransient<IAuthorizationHandler, OrderAccessRestrictions>();
 
 			services.AddSingleton<IPasswordHasher, PasswordHasher>();
 			services.AddSingleton<ITokenGenerator, TokenGenerator>();

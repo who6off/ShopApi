@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using ShopApi.Authentication;
 using ShopApi.Data.Models;
-using System.Security.Claims;
 
 namespace ShopApi.Authorization
 {
@@ -30,51 +29,36 @@ namespace ShopApi.Authorization
 				return Task.CompletedTask;
 			}
 
-
 			var userRole = user?.GetUserRole();
 			var userId = user?.GetUserId();
+			var isAdult = user?.IsAdult() ?? false;
+			var isAuthenticated = user.Identity.IsAuthenticated;
 
-			if (requirement.Name == ProductOperationNames.Get)
+			var isAuthorized = requirement.Name switch
 			{
-				if (HandleGet(user, userRole, product))
-				{
-					context.Succeed(requirement);
-				};
+				ProductOperationNames.Get => HandleGet(isAuthenticated, isAdult, userRole, product),
+				ProductOperationNames.Add => HandleAdd(isAuthenticated, userRole),
+				ProductOperationNames.Update => HandleUpdate(isAuthenticated, userId, userRole, product),
+				ProductOperationNames.Delete => HandleDelete(isAuthenticated, userId, userRole, product),
+				_ => true
+			};
 
-				return Task.CompletedTask;
-			}
-
-			if (!user.Identity.IsAuthenticated)
+			if (isAuthorized)
 			{
-				return Task.CompletedTask;
-			}
-
-			if (requirement.Name == ProductOperationNames.Update)
-			{
-				if (HandleUpdate(userId, userRole, product))
-				{
-					context.Succeed(requirement);
-				};
-
-				return Task.CompletedTask;
-			}
-
-			if (requirement.Name == ProductOperationNames.Delete)
-			{
-				if (HandleDelete(userId, userRole, product))
-				{
-					context.Succeed(requirement);
-				};
-
-				return Task.CompletedTask;
+				context.Succeed(requirement);
 			}
 
 			return Task.CompletedTask;
 		}
 
 
-		private bool HandleDelete(int? userId, string? userRole, Product product)
+		private bool HandleDelete(bool isAuthenticated, int? userId, string? userRole, Product product)
 		{
+			if (!isAuthenticated)
+			{
+				return false;
+			}
+
 			if (userRole == UserRoles.Admin)
 			{
 				return true;
@@ -89,8 +73,13 @@ namespace ShopApi.Authorization
 		}
 
 
-		private bool HandleUpdate(int? userId, string? userRole, Product product)
+		private bool HandleUpdate(bool isAuthenticated, int? userId, string? userRole, Product product)
 		{
+			if (!isAuthenticated)
+			{
+				return false;
+			}
+
 			if (userRole == UserRoles.Admin)
 			{
 				return true;
@@ -105,19 +94,30 @@ namespace ShopApi.Authorization
 		}
 
 
-		private bool HandleGet(ClaimsPrincipal user, string? userRole, Product product)
+		private bool HandleGet(bool isAuthenticated, bool isAdult, string? userRole, Product product)
 		{
-			if (user.Identity.IsAuthenticated && (userRole != UserRoles.Buyer))
+			if (isAuthenticated && (userRole != UserRoles.Buyer))
 			{
 				return true;
 			}
 
-			if ((!user.Identity.IsAuthenticated || !user.IsAdult()) && product.Category.IsForAdults)
+			if ((!isAuthenticated || !isAdult) && product.Category.IsForAdults)
 			{
 				return false;
 			}
 
 			return true;
+		}
+
+
+		private bool HandleAdd(bool isAuthenticated, string? userRole)
+		{
+			if (isAuthenticated && (userRole != UserRoles.Buyer))
+			{
+				return true;
+			}
+
+			return false;
 		}
 	}
 }
