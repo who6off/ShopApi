@@ -20,16 +20,7 @@ namespace ShopApi.Data.Models
 		[Required]
 		public uint Amount { get; set; }
 
-
-		public OrderItem Copy()
-		{
-			return new OrderItem()
-			{
-				Id = Id,
-				OrderId = OrderId,
-				ProductId = ProductId,
-				Amount = Amount,
-			};
-		}
+		[Column(TypeName = "decimal(8,2)")]
+		public decimal? PurchasePrice { get; set; }
 	}
 }

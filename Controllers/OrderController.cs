@@ -125,6 +125,16 @@ namespace ShopApi.Controllers
 		}
 
 
+		[HttpPut]
+		[Authorize]
+		[Route("{orderId:required}/delivery")]
+		public async Task<IActionResult> RequestOrderDelivery([FromRoute] int orderId)
+		{
+			var requestedOrder = await _orderService.RequestDelivery(orderId);
+
+			return Ok(requestedOrder);
+		}
+
 
 	}
 }

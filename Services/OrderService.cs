@@ -85,6 +85,7 @@ namespace ShopApi.Services
 			var order = _mapper.Map<Order>(dto);
 			order.BuyerId = _httpContext.User.GetUserId();
 			order.Date = DateTime.Now;
+			//Set PurchasePrice
 
 			var newOrder = await _orderRepository.Add(order);
 
@@ -109,12 +110,13 @@ namespace ShopApi.Services
 
 			_mapper.Map(dto, order);
 			order.Date = DateTime.Now;
+			//Set PurchasePrice
 
 			var updatedOrder = await _orderRepository.Update(order);
 
 			if (updatedOrder is null)
 			{
-				throw new AppException("Order creation error!");
+				throw new AppException("Order update error!");
 			}
 
 			var updatedOrderDto = _mapper.Map<OrderDTO>(updatedOrder);
@@ -164,7 +166,7 @@ namespace ShopApi.Services
 
 			if (newOrderItem is null)
 			{
-				throw new AppException("Creation error!");
+				throw new AppException("Item creation error!");
 			}
 
 			var newOrderItemDto = _mapper.Map<OrderItemDTO>(newOrderItem);
@@ -188,7 +190,7 @@ namespace ShopApi.Services
 			var updatedOrderItem = await _orderRepository.UpdateOrderItem(orderItem);
 			if (updatedOrderItem is null)
 			{
-				throw new AppException("Update error!");
+				throw new AppException("Item update error!");
 			}
 
 			var updatedOrderItemDto = _mapper.Map<OrderItemDTO>(updatedOrderItem);
@@ -222,11 +224,40 @@ namespace ShopApi.Services
 
 			if (deletedOrderItem is null)
 			{
-				throw new AppException("Delete error!");
+				throw new AppException("Item delete error!");
 			}
 
 			var deletedOrderItemDto = _mapper.Map<OrderItemDTO>(deletedOrderItem);
 			return deletedOrderItemDto;
+		}
+
+
+		public async Task<OrderDTO> RequestDelivery(int id)
+		{
+			var order = await _orderRepository.GetById(id);
+			await Authorize(order, OrderOperations.DeliveryRequest);
+
+			if (order.IsCanceled || order.IsDelivered)
+			{
+				throw new ClientInputException("Order is completed!");
+			}
+
+			if (order.IsRequestedForDelivery)
+			{
+				throw new ClientInputException("Order is already requested for delivery!");
+			}
+
+			order.IsRequestedForDelivery = true;
+			order.Date = DateTime.Now;
+			var updatedOrder = await _orderRepository.Update(order);
+
+			if (updatedOrder is null)
+			{
+				throw new AppException("Order creation error!");
+			}
+
+			var updatedOrderDto = _mapper.Map<OrderDTO>(updatedOrder);
+			return updatedOrderDto;
 		}
 
 

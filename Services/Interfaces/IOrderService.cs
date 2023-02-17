@@ -23,5 +23,7 @@ namespace ShopApi.Services.Interfaces
 
 		public Task<OrderItemDTO> DeleteOrderItem(int orderId, int itemId);
 
+
+		public Task<OrderDTO> RequestDelivery(int id);
 	}
 }
