@@ -136,5 +136,15 @@ namespace ShopApi.Controllers
 		}
 
 
+		[HttpPut]
+		[Authorize]
+		[Route("{orderId:required}/cancellation")]
+		public async Task<IActionResult> CancelOrder([FromRoute] int orderId)
+		{
+			var canceledOrder = await _orderService.CancelOrder(orderId);
+
+			return Ok(canceledOrder);
+		}
+
 	}
 }

@@ -249,6 +249,36 @@ namespace ShopApi.Services
 
 			order.IsRequestedForDelivery = true;
 			order.Date = DateTime.Now;
+			//Set PurcasePrice
+
+			var updatedOrder = await _orderRepository.Update(order);
+
+			if (updatedOrder is null)
+			{
+				throw new AppException("Order creation error!");
+			}
+
+			var updatedOrderDto = _mapper.Map<OrderDTO>(updatedOrder);
+			return updatedOrderDto;
+		}
+
+
+		public async Task<OrderDTO> CancelOrder(int id)
+		{
+			var order = await _orderRepository.GetById(id);
+			await Authorize(order, OrderOperations.Cancellation);
+
+			if (!order.IsRequestedForDelivery)
+			{
+				throw new ClientInputException("Can`t cancel unfinished order!");
+			}
+
+			if (order.IsCanceled || order.IsDelivered)
+			{
+				throw new ClientInputException("Order is completed!");
+			}
+
+			order.IsCanceled = true;
 			var updatedOrder = await _orderRepository.Update(order);
 
 			if (updatedOrder is null)

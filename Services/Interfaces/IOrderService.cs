@@ -25,5 +25,6 @@ namespace ShopApi.Services.Interfaces
 
 
 		public Task<OrderDTO> RequestDelivery(int id);
+		public Task<OrderDTO> CancelOrder(int id);
 	}
 }
