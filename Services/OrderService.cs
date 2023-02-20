@@ -45,16 +45,27 @@ namespace ShopApi.Services
 		public async Task<IPageData<OrderDTO>> Get(OrderSearchParameters searchParameters)
 		{
 			var userRole = _httpContext.User.GetUserRole();
+			var userId = _httpContext.User.GetUserId();
 
-			if (userRole != UserRoles.Admin)
+			if (userRole == UserRoles.Buyer)
 			{
-				var userId = _httpContext.User.GetUserId();
-
 				if (searchParameters.BuyerId is null)
 				{
 					searchParameters.BuyerId = userId;
 				}
 				else if ((searchParameters.BuyerId is not null) && (searchParameters.BuyerId != userId))
+				{
+					throw new AccessDeniedException("Access denied!");
+				}
+			}
+			else if (userRole == UserRoles.Seller)
+			{
+				if ((searchParameters.BuyerId is null) && (searchParameters.SellerId is null))
+				{
+					throw new ClientInputException("Not enough parameters!");
+				}
+
+				if ((searchParameters.BuyerId != userId) && (searchParameters.SellerId != userId))
 				{
 					throw new AccessDeniedException("Access denied!");
 				}

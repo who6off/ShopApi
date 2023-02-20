@@ -14,19 +14,73 @@ namespace ShopApi.Data.Repositories
 
 		public async Task<IPageData<Order>> Get(OrderSearchParameters searchParameters)
 		{
-			var query = _context.Orders
-				.Include(o => o.OrderItems)
-					.ThenInclude(oi => oi.Product)
-						.ThenInclude(p => p.Category)
-				.Include(o => o.OrderItems)
-					.ThenInclude(oi => oi.Product)
-						.ThenInclude(p => p.Seller)
+			//var query = _context.Orders
+			//	.Include(o => o.OrderItems)
+			//		.ThenInclude(oi => oi.Product)
+			//			.ThenInclude(p => p.Category)
+			//	.Include(o => o.OrderItems)
+			//		.ThenInclude(oi => oi.Product)
+			//			.ThenInclude(p => p.Seller)
+			//	.OrderByDescending(i => i.Date)
+			//	.AsQueryable();
+
+			IQueryable<Order> query;
+
+			if (searchParameters.SellerId is not null)
+			{
+				query = _context.Orders
+					.Include(o => o.OrderItems.Where(oi => oi.Product.SellerId == (searchParameters.SellerId)))
+					.Where(o => (o.OrderItems.Count > 0) && o.IsRequestedForDelivery);
+			}
+			else
+			{
+				query = _context.Orders.Include(o => o.OrderItems);
+			}
+
+			query = query
+				.Include("OrderItems.Product")
+				.Include("OrderItems.Product.Seller")
 				.OrderByDescending(i => i.Date)
 				.AsQueryable();
 
 			if (searchParameters.BuyerId is not null)
 			{
 				query = query.Where(i => i.BuyerId == searchParameters.BuyerId);
+			}
+
+			if (searchParameters.DateFrom is not null)
+			{
+				query = query.Where(i => i.Date >= searchParameters.DateFrom);
+			}
+
+			if (searchParameters.DateTo is not null)
+			{
+				query = query.Where(i => i.Date <= searchParameters.DateTo);
+			}
+
+			if (searchParameters.Date is not null)
+			{
+				query = query.Where(i => i.Date == searchParameters.Date);
+			}
+
+			if (searchParameters.IsRequestedForDelivery is not null)
+			{
+				query = query.Where(i => i.IsRequestedForDelivery == searchParameters.IsRequestedForDelivery);
+			}
+
+			if (searchParameters.IsCanceled is not null)
+			{
+				query = query.Where(i => i.IsCanceled == searchParameters.IsCanceled);
+			}
+
+			if (searchParameters.IsDelivered is not null)
+			{
+				query = query.Where(i => i.IsDelivered == searchParameters.IsDelivered);
+			}
+
+			if (searchParameters.DeliveryDate is not null)
+			{
+				query = query.Where(i => i.DeliveryDate == searchParameters.DeliveryDate);
 			}
 
 			var totalAmount = await query.CountAsync();
