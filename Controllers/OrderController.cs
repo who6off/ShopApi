@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Models.DTOs.Order;
+using ShopApi.Models.Requests.Order;
 using ShopApi.Services.Interfaces;
 
 namespace ShopApi.Controllers
@@ -11,17 +12,12 @@ namespace ShopApi.Controllers
 	public class OrderController : ControllerBase
 	{
 		private readonly IOrderService _orderService;
-		private readonly IProductService _productService;
-		private readonly IConfiguration _configuration;
 
 		public OrderController(
-			IConfiguration configuration,
-			IOrderService orderService,
-			IProductService productService)
+			IOrderService orderService
+		)
 		{
-			_configuration = configuration;
 			_orderService = orderService;
-			_productService = productService;
 		}
 
 
@@ -128,9 +124,14 @@ namespace ShopApi.Controllers
 		[HttpPut]
 		[Authorize]
 		[Route("{orderId:required}/delivery")]
-		public async Task<IActionResult> RequestOrderDelivery([FromRoute] int orderId)
+		public async Task<IActionResult> RequestOrderDelivery([FromRoute] int orderId, [FromBody] OrderDeliveryRequest deliveryRequest)
 		{
-			var requestedOrder = await _orderService.RequestDelivery(orderId);
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var requestedOrder = await _orderService.RequestDelivery(orderId, deliveryRequest);
 
 			return Ok(requestedOrder);
 		}

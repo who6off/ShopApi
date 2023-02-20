@@ -2,12 +2,12 @@
 using ShopApi.Helpers.Interfaces;
 using ShopApi.Models.DTOs.Role;
 using ShopApi.Models.DTOs.User;
-using ShopApi.Models.Requests;
+using ShopApi.Models.Requests.User;
 using ShopApi.Models.User;
 
 namespace ShopApi.Services.Interfaces
 {
-	public interface IUserService
+    public interface IUserService
 	{
 		public Task<UserRegistrationResult> Register(UserForRegistrationDTO dto);
 

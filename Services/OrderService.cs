@@ -8,6 +8,7 @@ using ShopApi.Data.Repositories.Interfaces;
 using ShopApi.Helpers.Exceptions;
 using ShopApi.Helpers.Interfaces;
 using ShopApi.Models.DTOs.Order;
+using ShopApi.Models.Requests.Order;
 using ShopApi.Services.Interfaces;
 
 namespace ShopApi.Services
@@ -96,7 +97,11 @@ namespace ShopApi.Services
 			var order = _mapper.Map<Order>(dto);
 			order.BuyerId = _httpContext.User.GetUserId();
 			order.Date = DateTime.Now;
-			//Set PurchasePrice
+
+			if (order.IsRequestedForDelivery)
+			{
+				SetPurchasePrices(order, orderedProducts);
+			}
 
 			var newOrder = await _orderRepository.Add(order);
 
@@ -121,7 +126,11 @@ namespace ShopApi.Services
 
 			_mapper.Map(dto, order);
 			order.Date = DateTime.Now;
-			//Set PurchasePrice
+
+			if (order.IsRequestedForDelivery)
+			{
+				SetPurchasePrices(order, orderedProducts);
+			}
 
 			var updatedOrder = await _orderRepository.Update(order);
 
@@ -243,7 +252,7 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<OrderDTO> RequestDelivery(int id)
+		public async Task<OrderDTO> RequestDelivery(int id, OrderDeliveryRequest deliveryRequest)
 		{
 			var order = await _orderRepository.GetById(id);
 			await Authorize(order, OrderOperations.DeliveryRequest);
@@ -259,8 +268,9 @@ namespace ShopApi.Services
 			}
 
 			order.IsRequestedForDelivery = true;
+			order.DeliveryAddress = deliveryRequest.DeliveryAddress;
 			order.Date = DateTime.Now;
-			//Set PurcasePrice
+			SetPurchasePrices(order);
 
 			var updatedOrder = await _orderRepository.Update(order);
 
@@ -373,6 +383,35 @@ namespace ShopApi.Services
 			if (isAnyProhibited)
 			{
 				throw new AccessDeniedException("Some of order items are prohibited to buy!");
+			}
+		}
+
+
+		private void SetPurchasePrices(Order order)
+		{
+			foreach (var orderItem in order.OrderItems)
+			{
+				if (orderItem.Product is null)
+				{
+					throw new NotFoundException("Can't get item price! Product is not found!");
+				}
+				orderItem.PurchasePrice = orderItem.Product.Price;
+			}
+		}
+
+
+		private void SetPurchasePrices(Order order, Product[] products)
+		{
+			var productDictionary = products.ToDictionary(i => i.Id);
+
+			foreach (var orderItem in order.OrderItems)
+			{
+				if (!productDictionary.TryGetValue(orderItem.ProductId!.Value, out var product))
+				{
+					throw new NotFoundException("Can't get item price! Product is not found!");
+				}
+
+				orderItem.PurchasePrice = product.Price;
 			}
 		}
 	}

@@ -15,6 +15,9 @@ namespace ShopApi.Data.Models
 		[Required]
 		public bool IsRequestedForDelivery { get; set; } = false;
 
+		[StringLength(200)]
+		public string? DeliveryAddress { get; set; }
+
 		public int? BuyerId { get; set; }
 
 		[ForeignKey("BuyerId")]

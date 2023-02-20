@@ -1,6 +1,7 @@
 ﻿using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Helpers.Interfaces;
 using ShopApi.Models.DTOs.Order;
+using ShopApi.Models.Requests.Order;
 
 namespace ShopApi.Services.Interfaces
 {
@@ -24,7 +25,7 @@ namespace ShopApi.Services.Interfaces
 		public Task<OrderItemDTO> DeleteOrderItem(int orderId, int itemId);
 
 
-		public Task<OrderDTO> RequestDelivery(int id);
+		public Task<OrderDTO> RequestDelivery(int id, OrderDeliveryRequest deliveryRequest);
 		public Task<OrderDTO> CancelOrder(int id);
 	}
 }

@@ -7,5 +7,7 @@ namespace ShopApi.Models.DTOs.Order
 		public ProductDTO Product { get; set; }
 
 		public uint Amount { get; set; }
+
+		public decimal? PurchasePrice { get; set; }
 	}
 }

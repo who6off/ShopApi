@@ -5,7 +5,7 @@ using ShopApi.Authorization;
 using ShopApi.Data.Models.SearchParameters;
 using ShopApi.Helpers.Exceptions;
 using ShopApi.Models.DTOs.User;
-using ShopApi.Models.Requests;
+using ShopApi.Models.Requests.User;
 using ShopApi.Services.Interfaces;
 
 namespace ShopApi.Controllers

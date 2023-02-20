@@ -10,13 +10,13 @@ using ShopApi.Helpers.Exceptions;
 using ShopApi.Helpers.Interfaces;
 using ShopApi.Models.DTOs.Role;
 using ShopApi.Models.DTOs.User;
-using ShopApi.Models.Requests;
+using ShopApi.Models.Requests.User;
 using ShopApi.Models.User;
 using ShopApi.Services.Interfaces;
 
 namespace ShopApi.Services
 {
-	public class UserService : IUserService
+    public class UserService : IUserService
 	{
 		private readonly IUserRepository _userRepository;
 		private readonly IRoleRepository _roleRepository;
