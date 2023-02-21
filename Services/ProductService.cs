@@ -77,7 +77,7 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<ProductDTO?> GetById(int id)
+		public async Task<ProductDTO> GetById(int id)
 		{
 			var product = await _productRepository.GetById(id);
 			await Authorize(product, ProductOperations.Get);
@@ -87,7 +87,7 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<ProductDTO?> Add(ProductForCreationDTO dto)
+		public async Task<ProductDTO> Add(ProductForCreationDTO dto)
 		{
 			var product = _mapper.Map<Product>(dto);
 			await MapProductOperationDTO(product, dto);
@@ -107,7 +107,7 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<ProductDTO?> Update(int id, ProductForUpdateDTO dto)
+		public async Task<ProductDTO> Update(int id, ProductForUpdateDTO dto)
 		{
 			var product = await _productRepository.GetById(id);
 			await Authorize(product, ProductOperations.Update);
@@ -139,7 +139,7 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<ProductDTO?> Delete(int id)
+		public async Task<ProductDTO> Delete(int id)
 		{
 			var product = await _productRepository.GetById(id);
 			await Authorize(product, ProductOperations.Delete);

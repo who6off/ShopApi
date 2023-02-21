@@ -56,7 +56,7 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<UserRegistrationResult?> Register(UserForRegistrationDTO dto)
+		public async Task<UserRegistrationResult> Register(UserForRegistrationDTO dto)
 		{
 			var user = _mapper.Map<User>(dto);
 
@@ -93,7 +93,7 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<UserLoginResult?> Login(LoginRequest request)
+		public async Task<UserLoginResult> Login(LoginRequest request)
 		{
 			var user = await _userRepository.GetByEmail(request.Email);
 
@@ -156,7 +156,7 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<UserDTO?> GetById(int id)
+		public async Task<UserDTO> GetById(int id)
 		{
 			var user = await _userRepository.GetById(id);
 
@@ -178,7 +178,7 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<UserDTO?> Add(UserForCreationDTO dto)
+		public async Task<UserDTO> Add(UserForCreationDTO dto)
 		{
 			var user = _mapper.Map<User>(dto);
 
@@ -208,13 +208,13 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<UserDTO?> Update(int id, UserForUpdateDTO dto)
+		public async Task<UserDTO> Update(int id, UserForUpdateDTO dto)
 		{
 			var user = await _userRepository.GetById(id);
 
 			if (user is null)
 			{
-				throw new NotFoundException("User is not found");
+				throw new NotFoundException("User is not found!");
 			}
 
 			_mapper.Map(dto, user);
@@ -236,7 +236,7 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<UserDTO?> Delete(int id)
+		public async Task<UserDTO> Delete(int id)
 		{
 			var user = await _userRepository.GetById(id);
 

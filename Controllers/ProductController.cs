@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
 using ShopApi.Data.Models.SearchParameters;
-using ShopApi.Helpers.Exceptions;
 using ShopApi.Models.DTOs.Product;
 using ShopApi.Services.Interfaces;
 
@@ -48,11 +47,6 @@ namespace ShopApi.Controllers
 		{
 			var product = await _productService.Add(dto);
 
-			if (product is null)
-			{
-				throw new AppException("Creation error!");
-			}
-
 			return Ok(product);
 		}
 
@@ -65,11 +59,6 @@ namespace ShopApi.Controllers
 		{
 			var updetedProduct = await _productService.Update(id, dto);
 
-			if (updetedProduct is null)
-			{
-				throw new AppException("Update error!");
-			}
-
 			return Ok(updetedProduct);
 		}
 
@@ -80,11 +69,6 @@ namespace ShopApi.Controllers
 		public async Task<IActionResult> DeleteProduct([FromRoute] int id)
 		{
 			var deletedProduct = await _productService.Delete(id);
-
-			if (deletedProduct is null)
-			{
-				throw new AppException("Delete error!");
-			}
 
 			return Ok(deletedProduct);
 		}

@@ -8,12 +8,12 @@ namespace ShopApi.Services.Interfaces
 	{
 		public Task<IPageData<CategoryDTO>> Get(CategorySearchParameters parameters);
 
-		public Task<CategoryDTO?> GetById(int id);
+		public Task<CategoryDTO> GetById(int id);
 
-		public Task<CategoryDTO?> Add(CategoryForCreationDTO category);
+		public Task<CategoryDTO> Add(CategoryForCreationDTO category);
 
-		public Task<CategoryDTO?> Update(int id, CategoryForUpdateDTO dto);
+		public Task<CategoryDTO> Update(int id, CategoryForUpdateDTO dto);
 
-		public Task<CategoryDTO?> Delete(int id);
+		public Task<CategoryDTO> Delete(int id);
 	}
 }

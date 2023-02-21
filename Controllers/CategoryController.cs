@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
 using ShopApi.Data.Models.SearchParameters;
-using ShopApi.Helpers.Exceptions;
 using ShopApi.Models.DTOs.Category;
 using ShopApi.Services.Interfaces;
 
@@ -39,11 +38,6 @@ namespace ShopApi.Controllers
 		{
 			var category = await _categoryService.GetById(id);
 
-			if (category is null)
-			{
-				throw new NotFoundException("This category is not found!");
-			}
-
 			return Ok(category);
 		}
 
@@ -58,11 +52,6 @@ namespace ShopApi.Controllers
 			}
 
 			var newCategory = await _categoryService.Add(dto);
-
-			if (newCategory is null)
-			{
-				throw new AppException("Creation error!");
-			}
 
 			return Ok(newCategory);
 		}
@@ -80,11 +69,6 @@ namespace ShopApi.Controllers
 
 			var updatedCategory = await _categoryService.Update(id, dto);
 
-			if (updatedCategory is null)
-			{
-				throw new AppException("Update error!");
-			}
-
 			return Ok(updatedCategory);
 		}
 
@@ -95,11 +79,6 @@ namespace ShopApi.Controllers
 		public async Task<IActionResult> Delete(int id)
 		{
 			var deletedCategory = await _categoryService.Delete(id);
-
-			if (deletedCategory is null)
-			{
-				throw new AppException("Delete error!");
-			}
 
 			return Ok(deletedCategory);
 		}

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using ShopApi.Authentication;
 using ShopApi.Authorization;
 using ShopApi.Data.Models.SearchParameters;
-using ShopApi.Helpers.Exceptions;
 using ShopApi.Models.DTOs.User;
 using ShopApi.Models.Requests.User;
 using ShopApi.Services.Interfaces;
@@ -36,11 +35,6 @@ namespace ShopApi.Controllers
 
 			var registrationResult = await _userService.Register(dto);
 
-			if (registrationResult is null)
-			{
-				throw new AppException("Registration error");
-			}
-
 			return Ok(registrationResult);
 		}
 
@@ -57,11 +51,6 @@ namespace ShopApi.Controllers
 
 			var loginResult = await _userService.Login(request);
 
-			if (loginResult is null)
-			{
-				throw new Exception("Incorrect user credentials");
-			}
-
 			return Ok(loginResult);
 		}
 
@@ -72,11 +61,6 @@ namespace ShopApi.Controllers
 		public async Task<IActionResult> Profile()
 		{
 			var user = await _userService.GetById(User.GetUserId().Value);
-
-			if (user is null)
-			{
-				throw new NotFoundException("User is not found");
-			}
 
 			return Ok(user);
 		}
@@ -129,11 +113,6 @@ namespace ShopApi.Controllers
 
 			var newUser = await _userService.Add(dto);
 
-			if (newUser is null)
-			{
-				throw new AppException("Creation error!");
-			}
-
 			return Ok(newUser);
 		}
 
@@ -151,11 +130,6 @@ namespace ShopApi.Controllers
 
 			var updatedUser = await _userService.Update(id, dto);
 
-			if (updatedUser is null)
-			{
-				throw new AppException("Update error!");
-			}
-
 			return Ok(updatedUser);
 		}
 
@@ -171,11 +145,6 @@ namespace ShopApi.Controllers
 			}
 
 			var deletedUser = await _userService.Delete(id);
-
-			if (deletedUser is null)
-			{
-				throw new AppException("Delete error!");
-			}
 
 			return Ok(deletedUser);
 		}

@@ -27,16 +27,22 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<CategoryDTO?> Add(CategoryForCreationDTO dto)
+		public async Task<CategoryDTO> Add(CategoryForCreationDTO dto)
 		{
 			var category = _mapper.Map<Category>(dto);
 			var newCategory = await _repository.Add(category);
+
+			if (newCategory is null)
+			{
+				throw new AppException("Creation error!");
+			}
+
 			var newCategoryDTO = _mapper.Map<CategoryDTO>(newCategory);
 			return newCategoryDTO;
 		}
 
 
-		public async Task<CategoryDTO?> Update(int id, CategoryForUpdateDTO dto)
+		public async Task<CategoryDTO> Update(int id, CategoryForUpdateDTO dto)
 		{
 			var category = await _repository.GetById(id);
 
@@ -47,14 +53,26 @@ namespace ShopApi.Services
 
 			_mapper.Map(dto, category);
 			var updatedCategory = await _repository.Update(category);
+
+			if (updatedCategory is null)
+			{
+				throw new AppException("Update error!");
+			}
+
 			var updatedCategoryDTO = _mapper.Map<CategoryDTO>(updatedCategory);
 			return updatedCategoryDTO;
 		}
 
 
-		public async Task<CategoryDTO?> Delete(int id)
+		public async Task<CategoryDTO> Delete(int id)
 		{
 			var deletedCategory = await _repository.Delete(id);
+
+			if (deletedCategory is null)
+			{
+				throw new AppException("Delete error!");
+			}
+
 			var deletedCategoryDTO = _mapper.Map<CategoryDTO>(deletedCategory);
 			return deletedCategoryDTO;
 		}
@@ -88,13 +106,13 @@ namespace ShopApi.Services
 		}
 
 
-		public async Task<CategoryDTO?> GetById(int id)
+		public async Task<CategoryDTO> GetById(int id)
 		{
 			var category = await _repository.GetById(id);
 
 			if (category is null)
 			{
-				return null;
+				throw new NotFoundException("This category is not found!");
 			}
 
 			var user = _httpContextAccessor.HttpContext.User;
