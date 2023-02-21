@@ -24,6 +24,16 @@ namespace ShopApi.Data.Repositories
 				query = query.Where(i => EF.Functions.Like(i.Name, $"{searchParameters.Name}%"));
 			}
 
+			if (searchParameters.MinPrice is not null)
+			{
+				query = query.Where(i => i.Price >= searchParameters.MinPrice);
+			}
+
+			if (searchParameters.MaxPrice is not null)
+			{
+				query = query.Where(i => i.Price <= searchParameters.MaxPrice);
+			}
+
 			if (searchParameters.IsForAdults is not null)
 			{
 				query = query
