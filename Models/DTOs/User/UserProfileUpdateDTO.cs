@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ShopApi.Models.DTOs.User
 {
-	public class UserForCreationDTO : IValidatableObject
+	public class UserProfileUpdateDTO : IValidatableObject
 	{
 		[Required]
 		[StringLength(320, MinimumLength = 3)]
@@ -11,6 +11,8 @@ namespace ShopApi.Models.DTOs.User
 
 		[Required]
 		public string Password { get; set; }
+
+		public string? NewPassword { get; set; }
 
 		[Required]
 		[StringLength(40, MinimumLength = 1)]
@@ -20,8 +22,6 @@ namespace ShopApi.Models.DTOs.User
 		[StringLength(100, MinimumLength = 1)]
 		public string SecondName { get; set; }
 
-		[Required]
-		public int? RoleId { get; set; }
 
 		[Required]
 		public DateTime? BirthDate { get; set; }
@@ -37,9 +37,9 @@ namespace ShopApi.Models.DTOs.User
 				errors.Add(new ValidationResult("Incorrect email address", new string[] { "Email" }));
 			}
 
-			if (!validator.ValidatePassword(Password))
+			if ((string.IsNullOrEmpty(NewPassword) == false) && (validator.ValidatePassword(NewPassword) == false))
 			{
-				errors.Add(new ValidationResult("Inappropriate password", new string[] { "Password" }));
+				errors.Add(new ValidationResult("Inappropriate password", new string[] { "NewPassword" }));
 			}
 
 			return errors;

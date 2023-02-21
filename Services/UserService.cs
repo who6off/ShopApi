@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ShopApi.Authentication;
 using ShopApi.Authentication.Interfaces;
+using ShopApi.Authorization;
 using ShopApi.Configuration;
 using ShopApi.Data.Models;
 using ShopApi.Data.Models.SearchParameters;
@@ -16,7 +17,7 @@ using ShopApi.Services.Interfaces;
 
 namespace ShopApi.Services
 {
-    public class UserService : IUserService
+	public class UserService : IUserService
 	{
 		private readonly IUserRepository _userRepository;
 		private readonly IRoleRepository _roleRepository;
@@ -25,7 +26,7 @@ namespace ShopApi.Services
 		private readonly ITokenGenerator _tokenGenerator;
 		private readonly IValidator _validator;
 		private readonly IConfiguration _configuration;
-
+		private readonly HttpContext _httpContext;
 
 		public UserService(
 			IUserRepository userRepository,
@@ -34,7 +35,8 @@ namespace ShopApi.Services
 			IPasswordHasher passwordHasher,
 			ITokenGenerator tokenGenerator,
 			IValidator validator,
-			IConfiguration configuration
+			IConfiguration configuration,
+			IHttpContextAccessor httpContextAccessor
 		)
 		{
 			_userRepository = userRepository;
@@ -44,6 +46,13 @@ namespace ShopApi.Services
 			_tokenGenerator = tokenGenerator;
 			_validator = validator;
 			_configuration = configuration;
+
+			if (httpContextAccessor.HttpContext is null)
+			{
+				throw new AppException("User service error!");
+			}
+
+			_httpContext = httpContextAccessor.HttpContext;
 		}
 
 
@@ -95,7 +104,7 @@ namespace ShopApi.Services
 
 			if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
 			{
-				throw new AppException("Incorrect password!");
+				throw new AccessDeniedException("Incorrect password!");
 			}
 
 			var userLoginResult = new UserLoginResult()
@@ -105,6 +114,45 @@ namespace ShopApi.Services
 			};
 
 			return userLoginResult;
+		}
+
+
+		public async Task<UserProfileUpdateResult> UpdateProfile(UserProfileUpdateDTO dto)
+		{
+			var userId = _httpContext.User.GetUserId();
+			var user = await _userRepository.GetById(userId.Value);
+
+			if (user is null)
+			{
+				throw new NotFoundException("User is not found!");
+			}
+
+			if (!_passwordHasher.Verify(dto.Password, user.PasswordHash))
+			{
+				throw new AccessDeniedException("Incorrect password!");
+			}
+
+			_mapper.Map(dto, user);
+
+			if (!string.IsNullOrEmpty(dto.NewPassword))
+			{
+				user.PasswordHash = _passwordHasher.Hash(dto.NewPassword);
+			}
+
+			var updatedUser = await _userRepository.Update(user);
+
+			if (updatedUser is null)
+			{
+				throw new AppException("Profile update error!");
+			}
+
+			var profileUpdateResult = new UserProfileUpdateResult()
+			{
+				User = _mapper.Map<UserDTO>(updatedUser),
+				Token = _tokenGenerator.Generate(user)
+			};
+
+			return profileUpdateResult;
 		}
 
 

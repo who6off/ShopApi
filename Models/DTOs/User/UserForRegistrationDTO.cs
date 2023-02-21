@@ -34,12 +34,12 @@ namespace ShopApi.Models.DTOs.User
 
 			if (!validator.ValidateEmail(Email))
 			{
-				errors.Add(new ValidationResult("Incorrect email address", new string[] { "Email" })); ;
+				errors.Add(new ValidationResult("Incorrect email address", new string[] { "Email" }));
 			}
 
 			if (!validator.ValidatePassword(Password))
 			{
-				errors.Add(new ValidationResult("Incorrect password", new string[] { "Password" })); ;
+				errors.Add(new ValidationResult("Inappropriate password", new string[] { "Password" }));
 			}
 
 			return errors;

@@ -82,6 +82,22 @@ namespace ShopApi.Controllers
 		}
 
 
+		[HttpPut]
+		[Authorize]
+		[Route("profile")]
+		public async Task<IActionResult> UpdateProfile([FromBody] UserProfileUpdateDTO dto)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var profileUpdateResult = await _userService.UpdateProfile(dto);
+
+			return Ok(profileUpdateResult);
+		}
+
+
 		[HttpGet]
 		[Authorize(Roles = UserRoles.Admin)]
 		public async Task<IActionResult> GetUsers([FromQuery] UserSearchParameters searchParameters)

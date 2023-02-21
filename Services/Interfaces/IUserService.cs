@@ -7,11 +7,13 @@ using ShopApi.Models.User;
 
 namespace ShopApi.Services.Interfaces
 {
-    public interface IUserService
+	public interface IUserService
 	{
 		public Task<UserRegistrationResult> Register(UserForRegistrationDTO dto);
 
 		public Task<UserLoginResult?> Login(LoginRequest request);
+
+		public Task<UserProfileUpdateResult> UpdateProfile(UserProfileUpdateDTO dto);
 
 		public Task<UserDTO?> GetById(int id);
 
