@@ -26,12 +26,6 @@ namespace ShopApi.Data
 		{
 			_settings = settings.Value;
 			_passwordHasher = passwordHasher;
-
-			if (_settings.InitData)
-			{
-				Database.EnsureDeleted();
-				Database.EnsureCreated();
-			}
 		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)

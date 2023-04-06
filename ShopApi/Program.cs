@@ -28,7 +28,6 @@ namespace ShopApi
 			var builder = WebApplication.CreateBuilder();
 			var (services, configuration) = (builder.Services, builder.Configuration);
 
-
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 				 .AddJwtBearer(options =>
 				 {
@@ -159,6 +158,8 @@ namespace ShopApi
 			});
 
 			ServiceAccessor.Services = app.Services;
+
+			DatabaseInitializer.Initialize(app.Services);
 
 			app.Run();
 		}
