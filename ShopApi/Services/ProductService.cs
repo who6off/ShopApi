@@ -123,6 +123,7 @@ namespace ShopApi.Services
 			var oldImage = product.Image;
 
 			_mapper.Map(dto, product);
+			product.Category = null;
 			await MapProductOperationDTO(product, dto);
 
 			var newImage = (dto.Image is null) ? null : await _fileService.SaveImage(dto.Image);
