@@ -22,7 +22,7 @@ namespace ShopApi.Services
 		private readonly IAuthorizationService _authorizationService;
 		private readonly HttpContext? _httpContext;
 		private readonly IMapper _mapper;
-
+		private readonly string _imagesFolderName;
 
 		public ProductService(
 			ICategoryRepository categoryRepository,
@@ -31,7 +31,8 @@ namespace ShopApi.Services
 			IFileService fileService,
 			IHttpContextAccessor httpContextAccessor,
 			IMapper mapper,
-			IAuthorizationService authorizationService
+			IAuthorizationService authorizationService,
+			IConfiguration configuration
 			)
 		{
 			_categoryRepository = categoryRepository;
@@ -41,6 +42,7 @@ namespace ShopApi.Services
 			_authorizationService = authorizationService;
 			_httpContext = httpContextAccessor.HttpContext;
 			_mapper = mapper;
+			_imagesFolderName = configuration.GetValue<string>("ImagesFolder");
 		}
 
 
@@ -73,6 +75,11 @@ namespace ShopApi.Services
 
 			var result = await _productRepository.Get(searchParameters);
 			var mapResult = result.Map<ProductDTO>(_mapper);
+			foreach (var product in mapResult.Data)
+			{
+				AddFolderNameToImagePath(product);
+			}
+
 			return mapResult;
 		}
 
@@ -103,6 +110,7 @@ namespace ShopApi.Services
 			}
 
 			var productDTO = _mapper.Map<ProductDTO>(newProduct);
+			AddFolderNameToImagePath(productDTO);
 			return productDTO;
 		}
 
@@ -135,6 +143,8 @@ namespace ShopApi.Services
 			}
 
 			var updatedProductDTO = _mapper.Map<ProductDTO>(updatedProduct);
+			AddFolderNameToImagePath(updatedProductDTO);
+
 			return updatedProductDTO;
 		}
 
@@ -156,6 +166,8 @@ namespace ShopApi.Services
 			}
 
 			var deletedProductDTO = _mapper.Map<ProductDTO>(deletedProduct);
+			AddFolderNameToImagePath(deletedProductDTO);
+
 			return deletedProductDTO;
 		}
 
@@ -210,6 +222,17 @@ namespace ShopApi.Services
 			{
 				throw new AccessDeniedException("Access denied!");
 			}
+		}
+
+
+		private void AddFolderNameToImagePath(ProductDTO productDto)
+		{
+			if (productDto.Image is null)
+			{
+				return;
+			}
+
+			productDto.Image = $"{_imagesFolderName}/{productDto.Image}";
 		}
 	}
 }
